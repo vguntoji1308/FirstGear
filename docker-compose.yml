@@ -1,0 +1,20 @@
+# Local / Dev run:  cp config/dev.env.example config/dev.env  &&  docker compose up --build
+# Then open http://localhost:3000   (admin password is printed in the logs if ADMIN_PASSWORD is blank)
+services:
+  web:
+    build: .
+    image: firstgear-car-rentals:dev
+    env_file:
+      - config/dev.env
+    environment:
+      APP_ENV: dev
+      NODE_ENV: development
+      DB_PATH: /app/data/dev.sqlite
+    ports:
+      - "3000:3000"
+    volumes:
+      - dev-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  dev-data:

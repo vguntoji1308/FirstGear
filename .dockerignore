@@ -1,0 +1,11 @@
+node_modules
+data
+.git
+.github
+dist
+*.zip
+config/dev.env
+config/prod.env
+.env
+docs
+test

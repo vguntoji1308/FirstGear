@@ -1,0 +1,145 @@
+# Azure DevOps pipeline: build + test -> Docker image -> deploy Dev (auto) -> manual approval -> deploy PROD.
+#
+# One-time setup (see docs/DEPLOYMENT.md):
+#   * Service connections:  <acrServiceConnection> (Docker Registry), <azureServiceConnection> (Azure Resource Manager)
+#   * Environments: "firstgear-dev" and "firstgear-prod". On "firstgear-prod" add an Approvals check (required reviewers).
+#   * Variable groups "firstgear-dev" and "firstgear-prod" holding webAppName, resourceGroup and the app settings below
+#     (mark JWT_SECRET / ADMIN_PASSWORD as secret, or link them to Azure Key Vault).
+# Hosting target here is Azure Web App for Containers; swap the deploy step for any other host (the image is portable).
+
+trigger:
+  branches:
+    include: [main]
+pr:
+  branches:
+    include: [main]
+
+parameters:
+  - name: acrServiceConnection
+    default: firstgear-acr
+  - name: azureServiceConnection
+    default: firstgear-azure
+  - name: containerRegistry
+    default: yourregistry.azurecr.io
+  - name: imageRepository
+    default: firstgear-car-rentals
+
+variables:
+  imageTag: $(Build.BuildId)
+  nodeVersion: 22.x
+
+stages:
+  - stage: Build
+    displayName: Build and test
+    jobs:
+      - job: BuildTest
+        pool: { vmImage: ubuntu-latest }
+        steps:
+          - task: NodeTool@0
+            inputs: { versionSpec: $(nodeVersion) }
+          - script: npm ci --no-audit --no-fund
+            displayName: Install dependencies
+          - script: npm run lint
+            displayName: Syntax check
+          - script: npm test
+            displayName: Run tests
+          - script: npm audit --omit=dev --audit-level=high
+            displayName: Dependency audit (high+)
+            continueOnError: true
+          - task: Docker@2
+            displayName: Build image
+            inputs:
+              command: build
+              containerRegistry: ${{ parameters.acrServiceConnection }}
+              repository: ${{ parameters.imageRepository }}
+              Dockerfile: Dockerfile
+              tags: $(imageTag)
+          - task: Docker@2
+            displayName: Push image
+            condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+            inputs:
+              command: push
+              containerRegistry: ${{ parameters.acrServiceConnection }}
+              repository: ${{ parameters.imageRepository }}
+              tags: $(imageTag)
+
+  - stage: DeployDev
+    displayName: Deploy to Dev
+    dependsOn: Build
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    variables:
+      - group: firstgear-dev
+    jobs:
+      - deployment: Dev
+        pool: { vmImage: ubuntu-latest }
+        environment: firstgear-dev
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebAppContainer@1
+                  displayName: Deploy container to Dev
+                  inputs:
+                    azureSubscription: ${{ parameters.azureServiceConnection }}
+                    appName: $(webAppName)
+                    containers: ${{ parameters.containerRegistry }}/${{ parameters.imageRepository }}:$(imageTag)
+                    appSettings: >-
+                      -APP_ENV dev -WEBSITES_PORT 3000 -PORT 3000 -DB_PATH /home/data/dev.sqlite
+                      -JWT_SECRET "$(JWT_SECRET)" -ADMIN_EMAIL "$(ADMIN_EMAIL)" -ADMIN_PASSWORD "$(ADMIN_PASSWORD)"
+                      -BUSINESS_PHONE "$(BUSINESS_PHONE)" -CORS_ORIGINS "$(CORS_ORIGINS)" -TRUST_PROXY true
+                - script: |
+                    for i in 1 2 3 4 5 6; do
+                      curl -fsS "https://$(webAppHost)/api/health" && exit 0
+                      sleep 10
+                    done
+                    echo "Health check failed"; exit 1
+                  displayName: Smoke test (health)
+
+  - stage: ApproveProd
+    displayName: Manual approval for PROD
+    dependsOn: DeployDev
+    condition: succeeded()
+    jobs:
+      - job: WaitForApproval
+        pool: server
+        timeoutInMinutes: 1440
+        steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: 1440
+            inputs:
+              notifyUsers: ''   # e.g. release-managers@yourcompany.com
+              instructions: 'Verify Dev, then approve to deploy build $(Build.BuildNumber) to PROD.'
+              onTimeout: reject
+
+  - stage: DeployProd
+    displayName: Deploy to PROD
+    dependsOn: ApproveProd
+    condition: succeeded()
+    variables:
+      - group: firstgear-prod
+    jobs:
+      - deployment: Prod
+        pool: { vmImage: ubuntu-latest }
+        environment: firstgear-prod   # also configure an Approvals check on this environment (defence in depth)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebAppContainer@1
+                  displayName: Deploy container to PROD
+                  inputs:
+                    azureSubscription: ${{ parameters.azureServiceConnection }}
+                    appName: $(webAppName)
+                    containers: ${{ parameters.containerRegistry }}/${{ parameters.imageRepository }}:$(imageTag)
+                    appSettings: >-
+                      -APP_ENV prod -WEBSITES_PORT 3000 -PORT 3000 -DB_PATH /home/data/prod.sqlite -SEED_DEMO_DATA false
+                      -JWT_SECRET "$(JWT_SECRET)" -ADMIN_EMAIL "$(ADMIN_EMAIL)" -ADMIN_PASSWORD "$(ADMIN_PASSWORD)"
+                      -BUSINESS_NAME "$(BUSINESS_NAME)" -BUSINESS_PHONE "$(BUSINESS_PHONE)" -BUSINESS_EMAIL "$(BUSINESS_EMAIL)"
+                      -CORS_ORIGINS "$(CORS_ORIGINS)" -TRUST_PROXY true
+                - script: |
+                    for i in 1 2 3 4 5 6; do
+                      curl -fsS "https://$(webAppHost)/api/health" && exit 0
+                      sleep 10
+                    done
+                    echo "Health check failed"; exit 1
+                  displayName: Smoke test (health)

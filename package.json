@@ -1,0 +1,27 @@
+{
+  "name": "firstgear-car-rentals",
+  "version": "1.0.0",
+  "description": "Car rental web app: fleet, booking, chauffeur option, ratings, chatbot, admin.",
+  "private": true,
+  "license": "MIT",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "start:dev": "node scripts/run-env.js dev --watch",
+    "start:prod": "node scripts/run-env.js prod",
+    "test": "node --test --test-concurrency=1 \"test/*.test.js\"",
+    "lint": "node scripts/check-syntax.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.8.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

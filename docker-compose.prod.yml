@@ -1,0 +1,29 @@
+# Production-style run on any Docker host:
+#   1. Create config/prod.env on the host from config/prod.env.example (real secrets, never committed)
+#      or export the variables from your secret store.
+#   2. docker compose -f docker-compose.prod.yml up -d --build
+# Put a TLS-terminating reverse proxy (Caddy, nginx, a cloud load balancer) in front; see docs/DEPLOYMENT.md.
+services:
+  web:
+    build: .
+    image: ${IMAGE:-firstgear-car-rentals:prod}
+    env_file:
+      - config/prod.env
+    environment:
+      APP_ENV: prod
+      NODE_ENV: production
+    ports:
+      - "127.0.0.1:3000:3000"   # bound to localhost; expose through the reverse proxy
+    volumes:
+      - prod-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: always
+
+volumes:
+  prod-data:
