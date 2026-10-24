@@ -11,6 +11,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
 COPY src ./src
 COPY public ./public
+COPY docs ./docs
+COPY scripts/sync-google-reviews.js ./scripts/sync-google-reviews.js
 # SQLite lives in /app/data: mount a persistent volume here.
 RUN mkdir -p /app/data && chown -R node:node /app/data
 USER node

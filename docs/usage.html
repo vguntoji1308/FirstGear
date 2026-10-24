@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Dev Docs | FirstGear Car Rentals</title>
+  <link rel="icon" href="/img/favicon.png" type="image/png">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/docs/usage.css">
+  <script src="/js/theme.js"></script>
+  <script src="/js/common.js" defer></script>
+  <script src="/docs/usage.js" defer></script>
+</head>
+<body class="page-solid">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main">
+    <section class="page-head"><div class="container">
+      <span class="eyebrow">Development only</span>
+      <h1>Usage &amp; API Docs</h1>
+      <p class="lead">Use synthetic customer data here. Booking requests change this environment's database; this page does not send them automatically.</p>
+      <a class="btn small" href="#booking-example">Booking example</a>
+      <a class="btn small ghost" href="#api-reference">All APIs</a>
+    </div></section>
+    <div class="container docs-content">
+      <section class="panel" aria-labelledby="usage-heading">
+        <h2 id="usage-heading">Using the app</h2>
+        <ol>
+          <li>Open <a href="/fleet">Fleet</a>, select future dates and choose an available car.</li>
+          <li>Choose self-drive or GearPilot, pickup/dropoff locations, and add-ons. Review the quote before confirming.</li>
+          <li>Supply customer details and accept the terms. Self-drive also requires a valid licence. Save the returned booking reference.</li>
+          <li>Use <a href="/manage">My booking</a> with the reference and email to look up or cancel a future confirmed booking.</li>
+          <li>Open <a href="/admin">Staff login</a> to manage cars, bookings, drivers and moderation. Admin credentials are configured locally, never included in these Docs.</li>
+        </ol>
+        <p>Only <code>pay_at_pickup</code> represents an offline payment arrangement. <code>pay_online_demo</code> does not charge money. There is no email/SMS confirmation integration.</p>
+        <p>Dates use <code>YYYY-MM-DD</code> (UTC); the return date is exclusive. A quote does not reserve a car. A booking can return <code>409</code> if the car or driver is no longer available.</p>
+      </section>
+      <section class="panel" id="booking-example" aria-labelledby="booking-heading">
+        <h2 id="booking-heading">Book a car with PowerShell</h2>
+        <p>This example discovers real location/car IDs, chooses an available car, gets a quote, creates a booking, and looks it up. It uses dates relative to today. Read the quote before running the booking lines. Re-running it creates another booking if a car is available.</p>
+        <pre><code id="booking-script">Loading booking example...</code></pre>
+        <p>For a chauffeur trip, set <code>driverMode = 'chauffeur'</code>, use only compatible add-ons from <code>/api/config</code>, and check <code>/api/availability/driver</code>. Licence fields are not required for chauffeur trips.</p>
+      </section>
+      <section class="panel" id="api-reference" aria-labelledby="api-heading">
+        <h2 id="api-heading">Complete API reference</h2>
+        <p>All API paths below are relative to <code>/api</code>. Admin endpoints require a bearer token from <code>POST /api/auth/login</code>. <a href="/docs/api" target="_blank" rel="noopener">Open the reference separately</a>.</p>
+        <p id="reference-status" role="status">Loading API reference...</p>
+        <pre id="reference-content" hidden></pre>
+      </section>
+      <section class="panel" aria-labelledby="gaps-heading">
+        <h2 id="gaps-heading">Before public production use</h2>
+        <ul>
+          <li>Integrate a real payment provider and payment verification if accepting online payments; add email/SMS confirmations if required.</li>
+          <li>There are no location-management APIs or image-upload APIs. Locations are seeded in code, and car photos must be deployed as files.</li>
+          <li>Verify prices, deposits, tax, locations, chauffeurs, social links and rental/privacy terms; some content is inferred or demo data.</li>
+          <li>Configure durable hosting, HTTPS, strong admin/JWT secrets, persistent storage, monitoring and scheduled backups. SQLite requires a single app instance with its local persistent disk.</li>
+          <li>A public tunnel exposes the whole app, including guest write APIs and the admin sign-in. Share only synthetic demo data; use an access-controlled tunnel for a development preview.</li>
+        </ul>
+        <p>Docs and their supporting files are served only when <code>APP_ENV=dev</code>; they are unavailable in PROD even by direct URL.</p>
+      </section>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+</body>
+</html>

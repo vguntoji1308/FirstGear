@@ -37,6 +37,11 @@ npm run lint    # syntax check of all JS
 
 ## Documentation
 
+In Dev, use the **Docs** navigation tab at `/docs` for usage and a runnable PowerShell booking
+example. The page, API reference and Docs assets return 404 in PROD; hiding the tab is not the
+only protection. See [local setup](docs/LOCAL_SETUP.md#public-access-from-this-computer) for
+temporary public access and its exposure risks.
+
 - [Local setup](docs/LOCAL_SETUP.md)
 - [Environments: Dev & PROD](docs/ENVIRONMENTS.md)
 - [Deployment guide](docs/DEPLOYMENT.md) (Docker, Azure, any host, both pipelines)

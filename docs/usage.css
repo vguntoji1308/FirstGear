@@ -1,0 +1,5 @@
+.docs-content { display: grid; gap: 32px; padding-block: 40px 80px; }
+.docs-content section { min-width: 0; scroll-margin-top: 120px; }
+.docs-content h2 { margin-bottom: 16px; }
+.docs-content li { margin-block: 8px; }
+.docs-content pre { overflow-x: auto; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-2); font-size: .85rem; line-height: 1.7; }
