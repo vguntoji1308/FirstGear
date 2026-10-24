@@ -7,5 +7,5 @@ dist
 config/dev.env
 config/prod.env
 .env
-docs
+mobile
 test

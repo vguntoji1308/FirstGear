@@ -19,7 +19,7 @@ With no `ADMIN_PASSWORD` set, dev prints a generated admin password in the conso
 Or with Docker: `cp config/dev.env.example config/dev.env && docker compose up --build`.
 
 ```bash
-npm test        # 16 API/security/config tests (node:test, no extra deps)
+npm test        # API, pricing, config and Dev/PROD Docs tests (node:test, no extra deps)
 npm run lint    # syntax check of all JS
 ```
 

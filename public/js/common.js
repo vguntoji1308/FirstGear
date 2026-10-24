@@ -22,11 +22,10 @@
     facebook: '<path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8.500c0-.300.200-.500.500-.500z"/>',
     instagram: '<rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.600"/><circle cx="17" cy="7" r=".6"/>',
     x: '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>',
-    linkedin: '<path d="M5 9v10M5 5.500v.100M10 19V9m0 4c0-2.500 1.500-4 4-4s4 1.500 4 4v6"/>',
     youtube: '<rect x="3" y="6" width="18" height="12" rx="4"/><path d="m10 9.500 5 2.500-5 2.500z"/>',
     whatsapp: '<path d="M4 20l1.300-4.200A8 8 0 1 1 8.400 18.900z"/><path d="M9 9c0 3 3 6 6 6l1-1.500-2-1-1 .700c-1-.500-1.700-1.200-2.200-2.200l.700-1-1-2z"/>',
   };
-  const SOCIAL_LABELS = { facebook: 'Facebook', instagram: 'Instagram', x: 'X (Twitter)', linkedin: 'LinkedIn', youtube: 'YouTube', whatsapp: 'WhatsApp' };
+  const SOCIAL_LABELS = { facebook: 'Facebook', instagram: 'Instagram', x: 'X (Twitter)', youtube: 'YouTube', whatsapp: 'WhatsApp' };
 
   const FILLED = new Set(['x']);
   const icon = (name, cls = '') => `<svg class="icon ${FILLED.has(name) ? 'fill ' : ''}${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[name] || ''}</svg>`;
@@ -120,7 +119,8 @@
   function showFieldErrors(form, details) {
     let first = null;
     for (const [name, msg] of Object.entries(details || {})) {
-      const el = form.elements[name];
+      const control = form.elements[name];
+      const el = control && control._flatpickr ? control._flatpickr.altInput : control;
       if (el) { field(el.length && !el.tagName ? el[0] : el, msg); first = first || el; }
     }
     if (first && first.focus) first.focus();
@@ -135,10 +135,10 @@
   const fmtDate = (s) => new Date(`${s}T00:00:00Z`).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 
   /* ---------- Layout: header, footer, floating call, chatbot ---------- */
-  const NAV = [['/', 'Home'], ['/fleet', 'Fleet'], ['/#chauffeur', 'GearPilot'], ['/#rental-terms', 'Rental terms'], ['/#reviews', 'Reviews'], ['/#contact', 'Contact'], ['/manage', 'My booking']];
+  const NAV = [['/', 'Home'], ['/fleet', 'Fleet'], ['/#chauffeur', 'GearPilot'], ['/#rental-terms', 'Rental terms'], ['/reviews', 'Reviews'], ['/#contact', 'Contact'], ['/manage', 'My booking']];
 
   function socialLinks(cfg) {
-    return Object.entries(cfg.business.social).filter(([, u]) => u).map(([k, u]) =>
+    return Object.entries(cfg.business.social).filter(([k, u]) => SOCIAL_LABELS[k] && u).map(([k, u]) =>
       `<li><a href="${esc(safeUrl(u))}" target="_blank" rel="noopener noreferrer" aria-label="${esc(SOCIAL_LABELS[k] || k)}">${icon(k)}</a></li>`).join('');
   }
 
@@ -157,8 +157,50 @@
         <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">${icon('menu')}</button></div></div>`;
       $('#theme-toggle').addEventListener('click', () => window.FGTheme.toggle());
       window.FGTheme.apply();
-      const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 24);
+      const links = $$('#nav-links a');
+      const sections = path === '/' ? nav.filter(([href]) => href.startsWith('/#'))
+        .map(([href]) => ({ href, element: document.getElementById(href.slice(2)) }))
+        .filter(({ element }) => element) : [];
+      const setActive = (href) => links.forEach((link) => {
+        if (link.getAttribute('href') === href) link.setAttribute('aria-current', href.includes('#') ? 'location' : 'page');
+        else link.removeAttribute('aria-current');
+      });
+      const syncSection = () => {
+        let active = path;
+        for (const section of sections) {
+          if (section.element.getBoundingClientRect().top <= header.offsetHeight + 48) active = section.href;
+        }
+        if (path === '/book') active = '/fleet';
+        if (path === '/docs/') active = '/docs';
+        setActive(active);
+      };
+      const onScroll = () => {
+        header.classList.toggle('scrolled', window.scrollY > 24);
+        syncSection();
+      };
       onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('hashchange', () => {
+        const href = `/${location.hash}`;
+        if (path === '/' && links.some((link) => link.getAttribute('href') === href)) setActive(href);
+      });
+      $('#nav-links').addEventListener('click', (event) => {
+        const link = event.target.closest('a');
+        if (!link) return;
+        $('#nav-links').classList.remove('open');
+        $('#menu-toggle').setAttribute('aria-expanded', 'false');
+        if (path === '/' && link.hash) setActive(link.getAttribute('href'));
+      });
+      header.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || !$('#nav-links').classList.contains('open')) return;
+        $('#nav-links').classList.remove('open');
+        $('#menu-toggle').setAttribute('aria-expanded', 'false');
+        $('#menu-toggle').focus();
+      });
+      document.addEventListener('click', (event) => {
+        if (header.contains(event.target)) return;
+        $('#nav-links').classList.remove('open');
+        $('#menu-toggle').setAttribute('aria-expanded', 'false');
+      });
       $('#menu-toggle').addEventListener('click', (e) => { const open = $('#nav-links').classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', String(open)); });
     }
     const footer = document.getElementById('site-footer');
@@ -169,7 +211,7 @@
           <ul class="socials" aria-label="Social media">${socialLinks(cfg)}</ul></div>
         <div><h4>Explore</h4><ul><li><a href="/fleet">Fleet</a></li><li><a href="/#chauffeur">GearPilot service</a></li><li><a href="/#rental-terms">Rental terms</a></li><li><a href="/manage">My booking</a></li></ul></div>
         <div><h4>Support</h4><ul><li><a href="/reviews">All reviews</a></li><li><a href="/#feedback">Give feedback</a></li><li><a href="/credits">Image credits</a></li><li><a href="/#contact">Contact</a></li><li><a href="/admin">Staff login</a></li></ul></div>
-        <div><h4>Call any time</h4><ul><li><a href="tel:${esc(tel)}">${icon('phone')} ${esc(b.phone)}</a></li><li><a href="mailto:${esc(b.email)}">${icon('mail')} ${esc(b.email)}</a></li><li class="muted">${esc(b.hours)}</li></ul></div>
+        <div><h4>Working Hours</h4><ul><li class="muted">${esc(b.hours)}</li><li><a href="tel:${esc(tel)}">${icon('phone')} ${esc(b.phone)}</a></li><li><a href="mailto:${esc(b.email)}">${icon('mail')} ${esc(b.email)}</a></li></ul></div>
       </div><div class="footer-bottom"><span class="fb-note">*Prices exclude tax unless shown at checkout.</span><span class="fb-copy">&copy; ${new Date().getFullYear()} ${esc(b.name)}. Demo content and placeholder media.</span></div></div>`;
     }
     if (cfg.env !== 'prod') { const badge = document.createElement('div'); badge.className = 'env-badge'; badge.textContent = `${cfg.env} environment`; document.body.appendChild(badge); }
@@ -202,7 +244,7 @@
       try { const r = await api('/chat', { method: 'POST', body: { message: text } }); add(r.text, 'bot', r.handoff); suggest(r.suggestions); }
       catch (e) { add(`Sorry, I could not answer that (${e.message}). Please call ${cfg.business.phone}.`, 'bot', true); }
     }
-    const toggle = (open) => { panel.classList.toggle('open', open); openBtn.setAttribute('aria-expanded', String(open)); if (open) { input.focus(); if (!log.children.length) { add(`Hi! I can help with opening hours, fleet, prices, GearPilot drivers, booking and policies. What would you like to know?`, 'bot'); suggest(['Opening hours', 'What cars do you have?', 'Prices', 'Book a GearPilot', 'Talk to a human']); } } };
+    const toggle = (open) => { panel.classList.toggle('open', open); openBtn.setAttribute('aria-expanded', String(open)); if (open) { input.focus(); if (!log.children.length) { add(`Hi! I can help with working hours, fleet, prices, GearPilot drivers, booking and policies. What would you like to know?`, 'bot'); suggest(['Working Hours', 'What cars do you have?', 'Prices', 'Book a GearPilot', 'Talk to a human']); } } };
     openBtn.addEventListener('click', () => toggle(!panel.classList.contains('open')));
     $('#chat-close').addEventListener('click', () => { toggle(false); openBtn.focus(); });
     panel.addEventListener('keydown', (e) => { if (e.key === 'Escape') { toggle(false); openBtn.focus(); } });

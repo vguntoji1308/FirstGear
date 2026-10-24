@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Book your car | FirstGear Car Rentals</title>
+  <meta name="description" content="Complete your car rental booking: choose self-drive or GearPilot, add extras and confirm.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0a0a12">
+  <link rel="icon" href="/img/favicon.png" type="image/png">
+  <link rel="stylesheet" href="/vendor/flatpickr.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/vendor/flatpickr.js" defer></script>
+  <script src="/js/calendar.js" defer></script>
+  <script src="/js/theme.js"></script>
+  <script src="/js/common.js" defer></script>
+  <script src="/js/book.js" defer></script>
+</head>
+<body class="page-solid">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main">
+    <section class="page-head"><div class="container"><span class="eyebrow">Booking</span><h1>Book your car</h1>
+      <ol class="stepper" id="stepper"><li data-s="1">1. Trip</li><li data-s="2">2. Your details</li><li data-s="3">3. Confirmation</li></ol></div></section>
+    <div class="container book-layout">
+      <div>
+        <div id="top-msg" aria-live="polite"></div>
+        <form id="trip-form" novalidate>
+          <div id="step1">
+            <h2>Your trip</h2>
+            <div class="form-grid">
+              <div class="field"><label for="b-pickup">Pick-up location</label><select id="b-pickup" name="pickupLocationId"></select></div>
+              <div class="field"><label for="b-dropoff">Drop-off location</label><select id="b-dropoff" name="dropoffLocationId"></select></div>
+              <div class="field"><label for="b-start">Pick-up date</label><input id="b-start" name="start" type="date" required></div>
+              <div class="field"><label for="b-end">Return date</label><input id="b-end" name="end" type="date" required></div>
+            </div>
+            <div class="field"><label for="b-car">Car</label><select id="b-car" name="carId"></select></div>
+            <h3>Who's driving?</h3>
+            <label class="option-card"><input type="radio" name="driverMode" value="self" checked><span class="grow"><b>Self-drive</b><small>You drive. Licence and minimum age <span id="min-age"></span> required, deposit held at pick-up.</small></span></label>
+            <label class="option-card"><input type="radio" name="driverMode" value="chauffeur"><span class="grow"><b>With a GearPilot driver <span id="ch-price"></span></b><small>We drive you. No licence or deposit needed.</small><div class="avail" id="ch-avail" aria-live="polite"></div></span></label>
+            <h3>Extras</h3>
+            <div id="addons"></div>
+            <div class="alert error hidden" id="trip-err" role="alert"></div>
+            <button class="btn" type="button" id="to-step2">Continue to your details</button>
+          </div>
+          <div id="step2" class="hidden">
+            <h2>Your details</h2>
+            <div class="form-grid">
+              <div class="field"><label for="c-name">Full name</label><input id="c-name" name="customerName" required maxlength="100" autocomplete="name"></div>
+              <div class="field"><label for="c-email">Email</label><input id="c-email" name="customerEmail" type="email" required maxlength="254" autocomplete="email"></div>
+              <div class="field"><label for="c-phone">Phone</label><input id="c-phone" name="customerPhone" type="tel" required maxlength="20" autocomplete="tel"></div>
+              <div class="field"><label for="c-dob">Date of birth</label><input id="c-dob" name="dateOfBirth" type="date" required autocomplete="bday"></div>
+            </div>
+            <div id="licence-block"><h3>Driving licence</h3><div class="form-grid">
+              <div class="field"><label for="c-lic">Licence number</label><input id="c-lic" name="licenceNumber" maxlength="20" autocomplete="off"></div>
+              <div class="field"><label for="c-country">Issuing country</label><input id="c-country" name="licenceCountry" maxlength="60"></div>
+              <div class="field"><label for="c-exp">Licence expiry</label><input id="c-exp" name="licenceExpiry" type="date"></div></div>
+              <p class="muted">We verify the physical licence at pick-up. Your licence number is used only for this booking.</p></div>
+            <h3>Payment</h3>
+            <label class="option-card"><input type="radio" name="paymentMethod" value="pay_at_pickup" checked><span class="grow"><b>Pay at pick-up</b><small>No payment now. Card or cash at the desk.</small></span></label>
+            <label class="option-card"><input type="radio" name="paymentMethod" value="pay_online_demo"><span class="grow"><b>Pay online (demo)</b><small>Placeholder for a payment gateway. No card data is collected in this build.</small></span></label>
+            <div class="field"><label for="c-notes">Notes (flight number, special requests)</label><textarea id="c-notes" name="notes" maxlength="500"></textarea></div>
+            <div class="field"><label class="check"><input type="checkbox" name="acceptTerms" required> I accept the <a href="/#rental-terms" target="_blank">rental terms</a> and confirm the details above are correct.</label></div>
+            <div class="alert error hidden" id="book-err" role="alert"></div>
+            <div class="car-actions"><button class="btn ghost" type="button" id="back1">Back</button><button class="btn" type="submit" id="confirm-btn">Confirm booking</button></div>
+          </div>
+        </form>
+        <div id="step3" class="hidden" aria-live="polite"></div>
+      </div>
+      <aside class="summary" aria-label="Price summary" id="summary-box">
+        <div class="car-card" id="sum-car"><div class="car-stage" id="sum-art"></div></div>
+        <div class="summary-body"><h2 id="sum-title">Price summary</h2><div id="sum-avail" aria-live="polite"></div><ul class="lines" id="sum-lines"></ul><div class="total"><span>Total</span><span id="sum-total">-</span></div><p class="muted" id="sum-deposit"></p></div>
+      </aside>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FirstGear Car Rentals | Car hire in Coimbatore with optional GearPilot driver</title>
+  <meta name="description" content="Rent well-kept cars in Coimbatore with transparent pricing, add a professional GearPilot driver, and book in minutes. Open 7 days, phone support any time.">
+  <meta property="og:title" content="FirstGear Car Rentals">
+  <meta property="og:description" content="Premium car hire with optional GearPilot driver. Book online in minutes.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#0a0a12">
+  <link rel="icon" href="/img/favicon.png" type="image/png">
+  <link rel="canonical" href="/">
+  <link rel="stylesheet" href="/vendor/flatpickr.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/vendor/flatpickr.js" defer></script>
+  <script src="/js/calendar.js" defer></script>
+  <script src="/js/theme.js"></script>
+  <script src="/js/common.js" defer></script>
+  <script src="/js/reviews-ui.js" defer></script>
+  <script src="/js/home.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="reveal">
+          <span class="eyebrow">Premium car rental</span>
+          <h1 id="hero-title">Drive the <span class="grad-text">extraordinary</span>. Or be driven.</h1>
+          <p class="lead">Hand-picked cars, clear pricing and an optional professional GearPilot driver. Book online in under three minutes, and call us any time.</p>
+          <form class="search-card" id="search-form" aria-label="Search available cars">
+            <div class="search-grid">
+              <div class="field"><label for="s-pickup">Pick-up location</label><select id="s-pickup" name="pickup" required></select></div>
+              <div class="field"><label for="s-dropoff">Drop-off location</label><select id="s-dropoff" name="dropoff" required></select></div>
+              <div class="field"><label for="s-start">Pick-up date</label><input type="date" id="s-start" name="start" required></div>
+              <div class="field"><label for="s-end">Return date</label><input type="date" id="s-end" name="end" required></div>
+            </div>
+            <div class="search-actions">
+              <div class="seg" role="radiogroup" aria-label="Driving option">
+                <input type="radio" name="driver" id="d-self" value="self" checked><label for="d-self">Self-drive</label>
+                <input type="radio" name="driver" id="d-chauffeur" value="chauffeur"><label for="d-chauffeur">With GearPilot</label>
+              </div>
+              <button class="btn" type="submit">Search cars</button>
+            </div>
+            <div id="search-msg" aria-live="polite"></div>
+          </form>
+          <div class="hero-badges"><span class="chip" id="chip-phone"></span><span class="chip" id="chip-free"></span></div>
+        </div>
+        <div class="reveal" data-delay="2" id="hero-art" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <div class="container"><div class="stats">
+      <div class="stat reveal"><b data-count="34">0</b><span>Cars in the fleet</span></div>
+      <div class="stat reveal" data-delay="1"><b id="stat-rating">-</b><span>Average customer rating</span></div>
+      <div class="stat reveal" data-delay="2"><b>24/7</b><span>Phone support</span></div>
+      <div class="stat reveal" data-delay="3"><b>3 min</b><span>Average booking time</span></div>
+    </div></div>
+
+    <section class="section" id="fleet" aria-labelledby="fleet-title">
+      <div class="container">
+        <div class="section-head reveal"><div><span class="eyebrow">The fleet</span><h2 id="fleet-title">Find your next ride</h2><p class="lead">From city hatchbacks to 7-seater family cars and rugged SUVs. Every car is rated by real customers.</p></div><a class="btn ghost" href="/fleet">View full fleet</a></div>
+        <div class="grid" id="featured"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+      </div>
+    </section>
+
+    <section class="section brands-section" aria-labelledby="brands-title"><div class="container"><h2 id="brands-title" class="eyebrow">Brands in our fleet</h2><div class="brands-strip reveal" id="brands-strip"></div></div></section>
+
+    <section class="section alt" id="why" aria-labelledby="why-title">
+      <div class="container">
+        <div class="reveal"><span class="eyebrow">Why FirstGear</span><h2 id="why-title">Premium, without the small print</h2></div>
+        <div class="features">
+          <article class="feature reveal"><div class="ico" id="i1"></div><h3>Transparent pricing</h3><p class="muted">See the full price, tax included, before you commit. No desk surprises.</p></article>
+          <article class="feature reveal" data-delay="1"><div class="ico" id="i2"></div><h3>Fully protected</h3><p class="muted">Add zero-excess cover in one tap and drive with total peace of mind.</p></article>
+          <article class="feature reveal" data-delay="2"><div class="ico" id="i3"></div><h3>Skip the desk</h3><p class="muted">Pick up at the airport, downtown or the harbour. Return somewhere else if you like.</p></article>
+          <article class="feature reveal" data-delay="3"><div class="ico" id="i4"></div><h3>Real people, always</h3><p class="muted">Call any hour for breakdowns or changes, or chat with our assistant right now.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="chauffeur" aria-labelledby="chauffeur-title">
+      <div class="container split">
+        <div class="reveal">
+          <span class="eyebrow">GearPilot service</span>
+          <h2 id="chauffeur-title">Sit back. <span class="grad-text">We'll drive.</span></h2>
+          <p class="lead">Add a vetted, uniformed GearPilot driver to any car, or book one instead of driving yourself. Perfect for weddings, airport transfers, business days and nights out.</p>
+          <ul class="ticks" id="chauffeur-ticks"></ul>
+          <a class="btn" href="/fleet?driver=chauffeur">Book a GearPilot</a>
+        </div>
+        <div class="panel reveal" data-delay="2">
+          <h3>Check GearPilot availability</h3>
+          <form id="driver-form" novalidate>
+            <div class="form-grid">
+              <div class="field"><label for="dv-start">From</label><input type="date" id="dv-start" required></div>
+              <div class="field"><label for="dv-end">To</label><input type="date" id="dv-end" required></div>
+            </div>
+            <button class="btn ghost" type="submit">Check availability</button>
+          </form>
+          <div id="driver-result" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt" aria-labelledby="how-title">
+      <div class="container"><div class="reveal"><span class="eyebrow">How it works</span><h2 id="how-title">Booked in three steps</h2></div>
+        <div class="steps">
+          <div class="step reveal"><h3>Search</h3><p class="muted">Choose dates and locations. We only show cars that are actually free.</p></div>
+          <div class="step reveal" data-delay="1"><h3>Customise</h3><p class="muted">Pick self-drive or GearPilot, add insurance, a child seat or GPS.</p></div>
+          <div class="step reveal" data-delay="2"><h3>Confirm</h3><p class="muted">Enter your details, accept the terms, and get your reference instantly.</p></div>
+        </div></div>
+    </section>
+
+    <section class="section" id="rental-terms" aria-labelledby="terms-title">
+      <div class="container">
+        <div class="reveal"><span class="eyebrow">Rental terms</span><h2 id="terms-title">The essentials, in plain language</h2><p class="lead">A summary of our policies. The full agreement is provided at pick-up.</p></div>
+        <div class="terms-list reveal" id="terms-list"></div>
+      </div>
+    </section>
+
+    <section class="section alt" id="reviews" aria-labelledby="reviews-title">
+      <div class="container">
+        <div class="section-head reveal"><div><span class="eyebrow">Customer reviews</span><h2 id="reviews-title">Loved by our customers</h2></div><div class="big-rating" id="big-rating"></div></div>
+        <div class="testi-grid rv-grid" id="testimonials"></div>
+        <div class="rv-more hidden" id="rv-more"><a class="btn" id="rv-all" href="/reviews">View all reviews</a><a class="btn ghost" id="google-link" href="#" target="_blank" rel="noopener noreferrer">See us on Google</a></div>
+      </div>
+    </section>
+
+    <section class="section" id="feedback" aria-labelledby="fb-title">
+      <div class="container split">
+        <div class="reveal"><span class="eyebrow">Your feedback</span><h2 id="fb-title">Tell us how we did</h2><p class="lead">Your feedback helps us improve. With your permission, we may publish it as a testimonial after a quick review.</p></div>
+        <form class="panel reveal" data-delay="2" id="feedback-form" novalidate>
+          <div class="form-grid">
+            <div class="field"><label for="fb-name">Name</label><input id="fb-name" name="name" required maxlength="80" autocomplete="name"></div>
+            <div class="field"><label for="fb-email">Email</label><input id="fb-email" name="email" type="email" required maxlength="254" autocomplete="email"></div>
+          </div>
+          <fieldset class="star-input field" id="fb-stars"><legend class="sr-only">Overall rating</legend>
+            <input type="radio" id="fs5" name="rating" value="5"><label for="fs5" title="5 stars">&#9733;<span class="sr-only">5 stars</span></label>
+            <input type="radio" id="fs4" name="rating" value="4"><label for="fs4" title="4 stars">&#9733;<span class="sr-only">4 stars</span></label>
+            <input type="radio" id="fs3" name="rating" value="3"><label for="fs3" title="3 stars">&#9733;<span class="sr-only">3 stars</span></label>
+            <input type="radio" id="fs2" name="rating" value="2"><label for="fs2" title="2 stars">&#9733;<span class="sr-only">2 stars</span></label>
+            <input type="radio" id="fs1" name="rating" value="1"><label for="fs1" title="1 star">&#9733;<span class="sr-only">1 star</span></label>
+          </fieldset>
+          <div class="field"><label for="fb-msg">Your message</label><textarea id="fb-msg" name="message" required minlength="5" maxlength="1000"></textarea></div>
+          <label class="check field"><input type="checkbox" name="allowPublish"> You may publish my feedback as a testimonial (first name only)</label>
+          <button class="btn" type="submit">Send feedback</button>
+          <div id="fb-msg-out" aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+
+    <section class="section alt" id="contact" aria-labelledby="contact-title">
+      <div class="container split">
+        <div class="reveal"><span class="eyebrow">Contact</span><h2 id="contact-title">We're here, any time</h2>
+          <ul class="contact-list" id="contact-list"></ul>
+          <h3>Follow us</h3><ul class="socials" id="contact-socials" aria-label="Social media"></ul></div>
+        <div class="panel reveal" data-delay="2"><h3>Need an answer now?</h3><p class="muted">Our phone line is answered around the clock for urgent requests, breakdowns and last-minute bookings.</p>
+          <a class="btn" id="contact-call" href="#"></a> <button class="btn ghost" type="button" id="contact-chat">Chat with us</button></div>
+      </div>
+    </section>
+  </main>
+  <footer id="site-footer"></footer>
+</body>
+</html>

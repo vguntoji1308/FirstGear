@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122 48" width="122" height="48" role="img" aria-label="Toyota">
+  <title>Toyota</title>
+  <rect x="1" y="1" width="120" height="46" rx="23" fill="#161625" stroke="#2a2a42" stroke-width="2"/>
+  <circle cx="24" cy="24" r="16" fill="#d9132a"/>
+  <text x="24" y="29" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="800" fill="#fff">T</text>
+  <text x="48" y="30" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700" fill="#f5f5fa">Toyota</text>
+</svg>

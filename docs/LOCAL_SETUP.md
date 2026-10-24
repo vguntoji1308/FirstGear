@@ -59,6 +59,42 @@ the computer must remain awake and both app and tunnel must stay running.
 Choose an access-controlled preview for private testing or explicitly approve an anonymous demo
 before starting a tunnel. Do not open router ports or change firewall rules for this.
 
+### Private preview with Cloudflare Access (selected setup)
+
+No public route has been created yet. Choose a hostname on your Cloudflare-managed domain
+(for example `rentals-dev.yourdomain.com`) and the email addresses allowed to sign in.
+Do not paste Cloudflare API keys, tunnel tokens or passwords into chat or the repository.
+
+1. **Protect the hostname first.** In Cloudflare Zero Trust, open **Access controls > Applications**,
+   create a self-hosted application and add the exact public hostname with no path restriction,
+   so the policy covers the site, `/api`, `/admin`, Docs and static assets.
+2. Add an **Allow** policy restricted to your explicit email addresses. Use your identity provider
+   or enable email one-time PIN authentication. Do not add an Everyone or Bypass policy.
+   Save the application before publishing any tunnel route.
+3. In **Networking > Tunnels**, create a named tunnel. Select Windows and follow the dashboard's
+   official client installation/connection instructions locally. Treat the connector token as a
+   secret. A Windows service installation requires administrator approval; do not install a service
+   on a shared or managed machine without permission.
+4. Once the connector is healthy, add a **Published application** route for that same hostname,
+   with service URL `http://127.0.0.1:3000`. Leave the path blank to forward the entire app.
+   Keep the Node app running and bound to loopback; do not enable router port forwarding.
+5. In an unsigned-in/incognito browser, confirm both `https://YOUR_HOSTNAME/` and
+   `https://YOUR_HOSTNAME/api/cars` require Access authentication rather than returning app content.
+   Confirm a non-allowed identity is denied. Then sign in as an allowed identity and verify Fleet,
+   Docs, and a synthetic booking. Staff sign-in still separately requires the app's admin account.
+6. To revoke the preview, disable the published route or stop the connector. Keep the Access policy
+   in place until after the route is removed. Keep this laptop awake while the preview is in use.
+
+Cloudflare Access adds authentication to an Internet-facing hostname; it is not a private-IP network.
+External PowerShell/curl requests also need Access authentication (for example a separately scoped
+service-token policy); the Docs example is immediately runnable against localhost, not through
+an interactive Access login page. Do not bypass Access on `/api` to make scripts work.
+
+Official references: [Access application setup](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/self-hosted-public-app/)
+and [dashboard-managed tunnel setup](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/get-started/create-remote-tunnel/).
+
+### Anonymous temporary demo (not selected)
+
 For an approved anonymous, temporary demo, install Cloudflare's `cloudflared` client from its
 official distribution, then in a separate terminal run:
 

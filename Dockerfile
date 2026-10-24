@@ -12,6 +12,7 @@ COPY package.json ./
 COPY src ./src
 COPY public ./public
 COPY docs ./docs
+COPY sdlc ./sdlc
 COPY scripts/sync-google-reviews.js ./scripts/sync-google-reviews.js
 # SQLite lives in /app/data: mount a persistent volume here.
 RUN mkdir -p /app/data && chown -R node:node /app/data

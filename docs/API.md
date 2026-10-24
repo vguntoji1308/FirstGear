@@ -18,9 +18,9 @@ Status codes: 400 validation, 401/403 auth, 404 not found, 409 conflict (availab
 | `POST /bookings` | Create booking. Returns booking incl. `ref` (e.g. `FG-1A2B3C4D`). 409 if car/chauffeur unavailable |
 | `GET /bookings/lookup?ref&email` | View a booking (both must match) |
 | `POST /bookings/cancel` | `{ref, email}`; only `confirmed` bookings starting after today |
-| `POST /feedback` | `{name, email, rating, message, allowPublish}`; shown as a testimonial only after admin approval |
+| `POST /feedback` | `{name, email, rating, message, allowPublish}`; stored in SQLite. Consented feedback appears immediately in Dev reviews labelled pending approval; PROD and testimonials still require admin approval |
 | `GET /testimonials` | Approved, consented testimonials + average |
-| `GET /reviews?limit=5` | Public reviews (imported Google reviews + approved feedback), newest first, with `summary {average, count, distribution, demo}` and `googleUrl`. Omit `limit` for all (max 500) |
+| `GET /reviews?limit=5` | Imported Google reviews + consented website feedback, newest first, with `summary {average, count, distribution, demo}`, `devPreview`, item `pendingApproval` and `googleUrl`. Dev includes pending feedback in items/summary; other environments require approval. Omit `limit` for all; supplied limit must be 1-500 |
 | `POST /chat` | `{message}` → `{text, suggestions[], handoff, intent}` |
 
 ### Trip body (`/quote`, `/bookings`)
@@ -35,6 +35,11 @@ Status codes: 400 validation, 401/403 auth, 404 not found, 409 conflict (availab
 ```
 `/bookings` additionally requires: `customerName, customerEmail, customerPhone, dateOfBirth, acceptTerms: true`, and for `self`: `licenceNumber, licenceCountry, licenceExpiry`; optional `paymentMethod (pay_at_pickup | pay_online_demo)`, `notes`.
 Dates are `YYYY-MM-DD`; the return date is exclusive; max rental length is `MAX_RENTAL_DAYS`.
+Date of birth must be on or after the date 80 calendar years before today (UTC), for both
+self-drive and chauffeur bookings and for quotes supplying a DOB. Licence expiry for self-drive
+must be after the return date and on or before the date 20 calendar years from today.
+Both boundary dates are inclusive; February 29 boundaries clamp to February 28 in non-leap years.
+`GET /config` exposes `rental.earliestDateOfBirth` and `rental.latestLicenceExpiry` for calendar limits.
 
 ## Admin (Authorization: `Bearer <token>`)
 

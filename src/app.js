@@ -40,6 +40,9 @@ function createApp({ db, config }) {
   const api = express.Router();
   api.use(require('./routes/public')({ db, config, writeLimiter }));
   api.use(require('./routes/admin')({ db, config, loginLimiter }));
+  if (config.appEnv === 'dev' && !config.isProd) {
+    api.use('/sdlc', require('./routes/sdlc')({ db, config, writeLimiter }));
+  }
   // Express 4 does not catch rejected promises, so forward errors to the error handler explicitly.
   api.post('/chat', chatLimiter, async (req, res, next) => {
     try {
@@ -50,6 +53,10 @@ function createApp({ db, config }) {
   });
   api.use((_req, _res, next) => next(new HttpError(404, 'Not found')));
   app.use('/api', api);
+
+  const calendarDist = path.dirname(require.resolve('flatpickr/dist/flatpickr.min.js'));
+  app.get('/vendor/flatpickr.js', (_req, res) => res.sendFile(path.join(calendarDist, 'flatpickr.min.js')));
+  app.get('/vendor/flatpickr.css', (_req, res) => res.sendFile(path.join(calendarDist, 'flatpickr.min.css')));
 
   // Keep documentation outside the public directory so static serving cannot bypass the environment gate.
   if (config.appEnv === 'dev' && !config.isProd) {
@@ -63,6 +70,9 @@ function createApp({ db, config }) {
     app.get('/docs/api', noCache, (_req, res) => res.type('text/plain').sendFile(path.join(docs, 'API.md')));
     app.get('/docs/usage.js', noCache, (_req, res) => res.sendFile(path.join(docs, 'usage.js')));
     app.get('/docs/usage.css', noCache, (_req, res) => res.sendFile(path.join(docs, 'usage.css')));
+    app.get(['/sdlc', '/sdlc/'], noCache, (_req, res) => res.sendFile(path.join(config.root, 'sdlc', 'index.html')));
+    app.get('/sdlc/dashboard.js', noCache, (_req, res) => res.sendFile(path.join(config.root, 'sdlc', 'dashboard.js')));
+    app.get('/sdlc/dashboard.css', noCache, (_req, res) => res.sendFile(path.join(config.root, 'sdlc', 'dashboard.css')));
   }
 
   // Images rarely change: let browsers/CDNs cache them for a week. Code and pages revalidate (1h in prod).

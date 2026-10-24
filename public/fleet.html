@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fleet | FirstGear Car Rentals</title>
+  <meta name="description" content="Browse and filter our rental fleet by category, transmission, fuel, seats and price. Check availability for your dates and read customer ratings.">
+  <meta name="theme-color" content="#0a0a12">
+  <link rel="icon" href="/img/favicon.png" type="image/png">
+  <link rel="stylesheet" href="/vendor/flatpickr.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/vendor/flatpickr.js" defer></script>
+  <script src="/js/calendar.js" defer></script>
+  <script src="/js/theme.js"></script>
+  <script src="/js/common.js" defer></script>
+  <script src="/js/fleet.js" defer></script>
+</head>
+<body class="page-solid">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main">
+    <section class="page-head"><div class="container"><span class="eyebrow">Our fleet</span><h1>Choose your car</h1><p class="lead" id="intro">Filter by brand, seats, fuel or price, and add your dates to see what's free.</p></div></section>
+    <div class="container fleet-layout">
+      <form class="filters" id="filters" aria-label="Fleet filters">
+        <h2>Filters</h2>
+        <div class="cat-chips" id="cats" role="group" aria-label="Category"></div>
+        <div class="field"><label for="f-q">Search</label><input id="f-q" type="search" placeholder="Make or model" maxlength="40"></div>
+        <div class="field"><label for="f-brand">Brand</label><select id="f-brand"><option value="">All brands</option></select></div>
+        <div class="form-grid">
+          <div class="field"><label for="f-start">Pick-up</label><input id="f-start" type="date"></div>
+          <div class="field"><label for="f-end">Return</label><input id="f-end" type="date"></div>
+        </div>
+        <label class="check field"><input type="checkbox" id="f-avail"> Show available cars only</label>
+        <div class="field"><label for="f-trans">Transmission</label><select id="f-trans"><option value="">Any</option><option value="automatic">Automatic</option><option value="manual">Manual</option></select></div>
+        <div class="field"><label for="f-fuel">Fuel</label><select id="f-fuel"><option value="">Any</option><option>petrol</option><option>diesel</option><option>hybrid</option><option>electric</option><option>cng</option></select></div>
+        <div class="field"><label for="f-seats">Minimum seats</label><select id="f-seats"><option value="">Any</option><option>5</option><option>7</option><option>8</option></select></div>
+        <div class="field"><label for="f-price">Max price per day: <output id="f-price-out"></output></label><input id="f-price" type="range" min="0" max="100" step="100" value="100"></div>
+        <div class="field"><label for="f-sort">Sort by</label><select id="f-sort"><option value="">Recommended</option><option value="price_asc">Price: low to high</option><option value="price_desc">Price: high to low</option><option value="rating">Top rated</option><option value="newest">Newest</option></select></div>
+        <button class="btn ghost small" type="reset" id="f-reset">Reset filters</button>
+      </form>
+      <section aria-live="polite" aria-label="Results">
+        <div class="result-bar"><strong id="count"></strong><div class="seg" role="radiogroup" aria-label="Driving option">
+          <input type="radio" name="driver" id="m-self" value="self" checked><label for="m-self">Self-drive</label>
+          <input type="radio" name="driver" id="m-chauffeur" value="chauffeur"><label for="m-chauffeur">With GearPilot</label></div></div>
+        <div class="grid" id="cars"></div>
+      </section>
+    </div>
+  </main>
+  <dialog id="car-dialog" aria-labelledby="dlg-title"><button class="dialog-close" id="dlg-close" aria-label="Close">&times;</button><div class="dialog-body" id="dlg-body"></div></dialog>
+  <footer id="site-footer"></footer>
+</body>
+</html>

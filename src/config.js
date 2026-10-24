@@ -64,6 +64,11 @@ module.exports = {
   adminEmail,
   adminPassword,
   corsOrigins: list(env.CORS_ORIGINS), // empty = same-origin only
+  sdlc: {
+    ollamaUrl: env.OLLAMA_URL || 'http://127.0.0.1:11434',
+    model: env.OLLAMA_MODEL || '',
+    timeoutMs: 120000,
+  },
   rateLimit: {
     windowMs: int(env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
     max: int(env.RATE_LIMIT_MAX, 300),
@@ -81,11 +86,10 @@ module.exports = {
     hours: env.BUSINESS_HOURS || 'Daily 08:00-20:00 (please confirm)',
     supportNote: env.BUSINESS_SUPPORT_NOTE || 'Phone line answered 24/7 for breakdowns and urgent requests.',
     social: {
-      facebook: env.SOCIAL_FACEBOOK ?? 'https://facebook.com/',
-      instagram: env.SOCIAL_INSTAGRAM ?? 'https://instagram.com/',
-      x: env.SOCIAL_X ?? 'https://x.com/',
-      linkedin: env.SOCIAL_LINKEDIN ?? 'https://linkedin.com/',
-      youtube: env.SOCIAL_YOUTUBE ?? 'https://youtube.com/',
+      facebook: env.SOCIAL_FACEBOOK ?? 'https://www.facebook.com/myfirstgear',
+      instagram: env.SOCIAL_INSTAGRAM ?? 'https://www.instagram.com/myfirstgear/',
+      x: env.SOCIAL_X ?? 'https://x.com/myfirstgear',
+      youtube: env.SOCIAL_YOUTUBE ?? 'https://www.youtube.com/@myfirstgear',
       whatsapp: env.SOCIAL_WHATSAPP ?? 'https://wa.me/919653313974',
     },
   },

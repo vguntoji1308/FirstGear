@@ -1,0 +1,17 @@
+[hidden] { display: none !important; }
+.studio-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-block: 24px; }
+.studio-toolbar p { flex: 1; margin: 0; }
+.studio-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 24px; margin-block: 24px 80px; align-items: start; }
+.studio-layout h2 { font-size: 1.6rem; }
+#runs { list-style: none; padding: 0; display: grid; gap: 10px; }
+#runs button { width: 100%; text-align: left; white-space: normal; }
+#runs button[aria-current] { border-color: var(--gold); }
+.studio-stage { padding-block: 20px; border-bottom: 1px solid var(--line); }
+.studio-stage h3 { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.studio-stage pre { white-space: pre-wrap; overflow-wrap: anywhere; font: .9rem/1.7 var(--font); padding: 16px; background: var(--bg); border-radius: 12px; max-height: 600px; overflow-y: auto; }
+.studio-stage .pill { color: var(--text); }
+.studio-stage .running { color: var(--gold); }
+.studio-stage .failed { color: var(--danger); }
+.studio-stage .approved { color: var(--alert-ok); }
+.studio-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-block: 12px; }
+@media (max-width: 800px) { .studio-layout { grid-template-columns: minmax(0, 1fr); } }

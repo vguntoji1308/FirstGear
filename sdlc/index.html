@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>SDLC Studio | FirstGear</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/sdlc/dashboard.css">
+  <script src="/js/theme.js"></script>
+  <script src="/js/common.js" defer></script>
+  <script src="/sdlc/dashboard.js" defer></script>
+</head>
+<body class="page-solid">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main" class="container">
+    <section class="page-head">
+      <span class="eyebrow">Dev only / local Ollama</span><h1>SDLC Studio</h1>
+      <p class="lead">Product Manager → Analyzer → Developer → Tester → Deployment</p>
+      <p class="alert info">Proposal mode: agents generate artifacts only. No files are changed, tests run, or deployments executed. Review and approve every stage before the next agent can start.</p>
+    </section>
+    <div id="message" role="status" aria-live="polite"></div>
+    <section id="signin" class="panel">
+      <h2>Staff sign-in</h2>
+      <form id="signin-form">
+        <div class="form-grid">
+          <div class="field"><label for="email">Admin email</label><input id="email" type="email" autocomplete="username" required></div>
+          <div class="field"><label for="password">Admin password</label><input id="password" type="password" autocomplete="current-password" required></div>
+        </div>
+        <button class="btn" type="submit">Sign in</button>
+      </form>
+    </section>
+    <section id="studio" hidden>
+      <div class="studio-toolbar">
+        <p id="provider" role="status">Checking Ollama...</p>
+        <button id="check-models" class="btn ghost small" type="button">Refresh models</button>
+        <button id="signout" class="btn ghost small" type="button">Sign out</button>
+      </div>
+      <section class="panel">
+        <h2>New run</h2>
+        <form id="new-run">
+          <div class="form-grid">
+            <div class="field"><label for="title">Title</label><input id="title" required maxlength="120"></div>
+            <div class="field"><label for="model">Installed Ollama model</label><select id="model" required><option value="">Refresh models to select</option></select></div>
+          </div>
+          <div class="field"><label for="request">Requirements / change request</label><textarea id="request" required minlength="10" maxlength="8000" placeholder="Describe the feature, constraints and acceptance criteria. Never include secrets or customer data."></textarea></div>
+          <button class="btn" type="submit">Create saved run</button>
+        </form>
+      </section>
+      <div class="studio-layout">
+        <aside class="panel"><h2>Saved runs</h2><button id="refresh-runs" class="btn ghost small" type="button">Refresh runs</button><ul id="runs"></ul></aside>
+        <section id="run" class="panel" aria-live="polite"><h2>Select a run</h2><p>Runs and approval records persist in the local environment database.</p></section>
+      </div>
+    </section>
+  </main>
+  <footer id="site-footer"></footer>
+</body>
+</html>

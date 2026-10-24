@@ -1,0 +1,11 @@
+[  290666ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:3001/img/brands/hyundai.svg:0
+[  290667ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:3001/img/brands/toyota.svg:0
+[  290813ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:3001/img/brands/toyota.svg:0
+[  290814ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:3001/img/brands/hyundai.svg:0
+[  290814ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:3001/img/brands/kia.svg:0
+[  290815ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:3001/img/brands/tata.svg:0
+[  290815ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:3001/img/brands/mahindra.svg:0
+[  320323ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:3001/api/locations:0
+[  320335ms] TypeError: Failed to fetch
+    at api (http://127.0.0.1:3001/js/common.js:41:23)
+    at HTMLDocument.<anonymous> (http://127.0.0.1:3001/js/home.js:27:24)

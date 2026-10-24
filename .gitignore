@@ -9,4 +9,5 @@ config/test.env
 .env.*
 !.env.example
 dist/
+mobile/android/build/
 *.zip

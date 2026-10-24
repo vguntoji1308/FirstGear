@@ -33,7 +33,7 @@ The app reads **only environment variables**. `APP_ENV` (`dev` | `prod`) picks a
 | `GOOGLE_PLACES_API_KEY`, `GOOGLE_PLACE_ID` | Optional Google reviews sync (`npm run reviews:sync`), see [GOOGLE_REVIEWS](GOOGLE_REVIEWS.md). The key is a secret | unset |
 | `SEED_DEMO_DATA` | Demo reviews & testimonials on first run | true in dev |
 | `BUSINESS_NAME`, `BUSINESS_PHONE`, `BUSINESS_EMAIL`, `BUSINESS_ADDRESS`, `BUSINESS_HOURS`, `BUSINESS_SUPPORT_NOTE` | Shown site-wide. **`BUSINESS_PHONE` drives every click-to-call button** | placeholders |
-| `SOCIAL_FACEBOOK` `_INSTAGRAM` `_X` `_LINKEDIN` `_YOUTUBE` `_WHATSAPP` | Social links (set to empty to hide one; the source site's icons had no real URLs) | generic network URLs |
+| `SOCIAL_FACEBOOK` `_INSTAGRAM` `_X` `_YOUTUBE` `_WHATSAPP` | Social links (set to empty to hide one). LinkedIn is not displayed | `myfirstgear` profiles; WhatsApp uses the business phone link |
 | `CURRENCY`, `CURRENCY_SYMBOL`, `TAX_RATE` | Money display and tax | INR, ₹, 0.05 (assumed GST: confirm) |
 | `MIN_DRIVER_AGE`, `YOUNG_DRIVER_UNDER`, `YOUNG_DRIVER_FEE_PER_DAY` | Age rules | 21, 25, 300 |
 | `CHAUFFEUR_DAILY_RATE` | Chauffeur price per day | 1200 |

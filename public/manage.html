@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My booking | FirstGear Car Rentals</title>
+  <meta name="description" content="Look up or cancel your FirstGear Car Rentals booking with your reference and email.">
+  <meta name="theme-color" content="#0a0a12">
+  <link rel="icon" href="/img/favicon.png" type="image/png">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/theme.js"></script>
+  <script src="/js/common.js" defer></script>
+  <script src="/js/manage.js" defer></script>
+</head>
+<body class="page-solid">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main">
+    <section class="page-head"><div class="container"><span class="eyebrow">My booking</span><h1>Find your booking</h1><p class="lead">Enter the reference from your confirmation and the email you booked with.</p></div></section>
+    <div class="container book-layout">
+      <div>
+        <form class="panel" id="lookup-form" novalidate>
+          <div class="form-grid"><div class="field"><label for="l-ref">Booking reference</label><input id="l-ref" name="ref" placeholder="FG-XXXXXXXX" required maxlength="20" autocomplete="off"></div>
+          <div class="field"><label for="l-email">Email</label><input id="l-email" name="email" type="email" required maxlength="254" autocomplete="email"></div></div>
+          <button class="btn" type="submit">Find booking</button>
+        </form>
+        <div id="lookup-msg" aria-live="polite"></div>
+        <div id="booking-view" aria-live="polite"></div>
+      </div>
+      <aside class="panel"><h3>Need to change something?</h3><p class="muted">Free cancellation applies up to the notice period shown in our rental terms. For changes, or if your trip has already started, call us any time.</p><a class="btn" id="call-link" href="#">Call us</a></aside>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+</body>
+</html>

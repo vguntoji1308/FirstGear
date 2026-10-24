@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff admin | FirstGear Car Rentals</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/img/favicon.png" type="image/png">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/theme.js"></script>
+  <script src="/js/common.js" defer></script>
+  <script src="/js/admin.js" defer></script>
+</head>
+<body class="page-solid">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main" class="container">
+    <section id="login-view" class="panel login-card">
+      <h1>Staff sign-in</h1>
+      <form id="login-form" novalidate>
+        <div class="field"><label for="a-email">Email</label><input id="a-email" name="email" type="email" required autocomplete="username"></div>
+        <div class="field"><label for="a-pass">Password</label><input id="a-pass" name="password" type="password" required autocomplete="current-password"></div>
+        <button class="btn" type="submit">Sign in</button><div id="login-msg" aria-live="polite"></div>
+      </form>
+    </section>
+    <section id="app-view" class="hidden">
+      <div class="page-head admin-head"><div class="section-head"><h1>Admin</h1><button class="btn ghost small" id="logout" type="button">Sign out</button></div></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="tabs" role="tablist" aria-label="Admin sections" id="tabs"></div>
+      <div id="panel" aria-live="polite"></div>
+    </section>
+  </main>
+  <dialog id="car-form-dialog" aria-labelledby="cf-title"><button class="dialog-close" id="cf-close" aria-label="Close">&times;</button>
+    <form class="dialog-body" id="car-form" novalidate><h2 id="cf-title">Car</h2><input type="hidden" name="id">
+      <div class="form-grid">
+        <div class="field"><label for="cf-brand">Brand (logo)</label><select id="cf-brand" name="brand"></select></div><div class="field"><label for="cf-make">Make (display name)</label><input id="cf-make" name="make" required></div><div class="field"><label for="cf-model">Model</label><input id="cf-model" name="model" required></div>
+        <div class="field"><label for="cf-year">Year</label><input id="cf-year" name="year" type="number" required></div>
+        <div class="field"><label for="cf-cat">Category</label><select id="cf-cat" name="category"></select></div>
+        <div class="field"><label for="cf-body">Body style</label><select id="cf-body" name="body"><option>hatch</option><option>sedan</option><option>suv</option><option>sports</option><option>van</option></select></div>
+        <div class="field"><label for="cf-color">Colour</label><input id="cf-color" name="color" type="color" value="#7c5cff"></div>
+        <div class="field"><label for="cf-trans">Transmission</label><select id="cf-trans" name="transmission"><option>automatic</option><option>manual</option></select></div>
+        <div class="field"><label for="cf-fuel">Fuel</label><select id="cf-fuel" name="fuel"><option>petrol</option><option>diesel</option><option>hybrid</option><option>electric</option><option>cng</option></select></div>
+        <div class="field"><label for="cf-seats">Seats</label><input id="cf-seats" name="seats" type="number" min="1" max="12" required></div>
+        <div class="field"><label for="cf-bags">Bags</label><input id="cf-bags" name="bags" type="number" min="0" max="12" required></div>
+        <div class="field"><label for="cf-price">Price per day</label><input id="cf-price" name="pricePerDay" type="number" min="1" step="0.01" required></div>
+        <div class="field"><label for="cf-dep">Deposit</label><input id="cf-dep" name="deposit" type="number" min="0" step="1" required></div>
+        <div class="field full"><label for="cf-image">Photo path (optional, file in public/img/cars/)</label><input id="cf-image" name="image" placeholder="/img/cars/my-car.jpg"></div>
+        <div class="field full"><label for="cf-desc">Description</label><input id="cf-desc" name="description" maxlength="500"></div>
+        <div class="field full"><label for="cf-feat">Features (comma separated)</label><input id="cf-feat" name="features"></div>
+        <label class="check field full"><input type="checkbox" name="active" checked> Visible to customers</label>
+      </div>
+      <div class="alert error hidden" id="cf-err" role="alert"></div><button class="btn" type="submit">Save car</button></form></dialog>
+  <footer id="site-footer"></footer>
+</body>
+</html>
