@@ -23,6 +23,31 @@ Status codes: 400 validation, 401/403 auth, 404 not found, 409 conflict (availab
 | `GET /reviews?limit=5` | Imported Google reviews + consented website feedback, newest first, with `summary {average, count, distribution, demo}`, `devPreview`, item `pendingApproval` and `googleUrl`. Dev includes pending feedback in items/summary; other environments require approval. Omit `limit` for all; supplied limit must be 1-500 |
 | `POST /chat` | `{message}` → `{text, suggestions[], handoff, intent}` |
 
+### Optional customer phone accounts
+
+Guest booking remains available. These endpoints use Twilio Verify, not the admin password/JWT.
+Use E.164 numbers, e.g. `+919876543210`. Never put Twilio credentials in the browser.
+
+| Method & path | Description |
+|---|---|
+| `POST /customer/otp/request` | JSON `{phone}`. Sends SMS through Twilio Verify; returns `{challengeId,expiresIn:600,retryAfter:60,message}`. Missing credentials: 503 (no fake success). Limit 5 sends/phone/hour, 60-second cooldown, 10 sends/IP/15 minutes |
+| `POST /customer/otp/verify` | JSON `{challengeId,code}`. Maximum 5 attempts/challenge and 30 checks/IP/15 minutes. Existing customer: `{needsRegistration:false,token,customer}`. New phone: `{needsRegistration:true,registrationToken}`. OTP challenges expire after 10 minutes, are single-use and are superseded by a new request |
+| `POST /customer/register` | `Authorization: Bearer <registrationToken>` (expires after 15 minutes). **multipart/form-data**, fields `name` (2-80 characters), `consent=true`, and one driving-licence image named `licence` (required for every new registration). Image bytes must be <=10,485,760, decoded pixels <=25 million. Creates account and returns `{token,customer}` with HTTP 201. Up to 5 requests/IP/15 minutes |
+| `GET /customer/me` | Customer login bearer token required. Returns `{id,phone,name,licenceMime,licenceBytes,createdAt}` without the image |
+| `GET /customer/licence` | Customer login bearer token required; downloads only that customer's private driving-licence WebP image with no-store caching |
+| `POST /customer/logout` | Customer login bearer token required; revokes this session and returns `{ok:true}` |
+
+Customer login tokens expire after 8 hours and are stored as hashes in SQLite.
+Registration tokens are single-use and cannot read profiles/licence images; customer tokens cannot
+access admin APIs. Supported upload formats: JPEG, PNG, WebP, GIF, TIFF and AVIF
+(codec support is validated by the server). The server decodes actual bytes, applies orientation,
+strips metadata and stores WebP. Animations use the first frame. SVG, PDF/Word, corrupt files,
+unsupported codecs and oversize images are rejected. All customer API responses are no-store.
+Driving-licence images are stored as private SQLite BLOBs, never under `public`.
+Existing SQLite columns `resume` and `resume_mime` are retained for data compatibility;
+they now hold the driving-licence image. Uploading does not verify document authenticity,
+ownership or validity, and does not replace the existing self-drive booking checks.
+
 ### Trip body (`/quote`, `/bookings`)
 ```json
 {
@@ -51,7 +76,8 @@ Both boundary dates are inclusive; February 29 boundaries clamp to February 28 i
 | `POST /admin/cars` | Create a car; returns `{id}`. Body below |
 | `PUT /admin/cars/:id` | Replace car fields using the full create body; optional `active: false` hides it |
 | `DELETE /admin/cars/:id` | Hide a car (soft delete; history kept) |
-| `GET /admin/bookings?status=` | List bookings |
+| `GET /admin/bookings` | Latest 500 matching bookings. Optional `period=all|current|past`, `carId`, `status`, `from`, `to`. Dates are inclusive pickup dates (`YYYY-MM-DD`). Current: confirmed/active with return date today or later; Past: completed/cancelled or return date before today (UTC) |
+| `GET /admin/bookings/trends` | Same filters; aggregates **all** matching rows, not just the latest 500. Returns `{sample,total,booked,cancelled,months:[{month,count}],cars:[{carId,car,count}]}`. Charts exclude cancelled bookings; months use pickup dates and omit months with no records. Cars sorted by frequency. `dataset=sample` is Dev-only, synthetic current-year data generated without inserting bookings; default `dataset=live` |
 | `PATCH /admin/bookings/:id` | `{status: confirmed|active|completed|cancelled}` |
 | `GET /admin/drivers` | All chauffeurs |
 | `POST /admin/drivers` | `{name, languages, yearsExperience}`; returns `{id}` |

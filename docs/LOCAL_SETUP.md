@@ -38,6 +38,52 @@ a PowerShell quote/book/lookup/cancel example. PROD has neither the tab nor the 
 
 `npm run start:dev` / `npm run start:prod` work on Windows, macOS and Linux (`npm start` also runs `dev`, the default environment).
 
+## Optional phone sign-in and driving-licence registration
+
+Open <http://localhost:3000/account> or **Sign in** in the public navigation. Visitors can still
+book without an account. New accounts require a verified mobile, name, storage consent and
+a driving-licence image up to **10 MB (10,485,760 bytes)** for every new registration. This document is for self-drive rentals, not a resume/CV. JPEG, PNG, WebP, GIF, TIFF and AVIF are
+supported; maximum 25 megapixels. Images are decoded and converted to WebP without metadata;
+animated images use only the first frame. Unsupported codecs, SVG and documents such as PDF
+or Word are rejected. Existing phone accounts need only the OTP to sign in again.
+
+Real SMS requires **Twilio Verify**:
+
+1. Create an SMS-enabled Verify Service in the [Twilio console](https://console.twilio.com/).
+   Use the default 10-minute verification validity. Configure destination country permissions,
+   Verify Fraud Guard, spend alerts and any required regional sender/compliance settings before
+   allowing public traffic. A trial account can deliver only to verified recipient numbers.
+2. Set `TWILIO_ACCOUNT_SID` (`AC...`), `TWILIO_AUTH_TOKEN` and
+   `TWILIO_VERIFY_SERVICE_SID` (`VA...`) in ignored `config\dev.env`, or inject them through your
+   deployment secret store. **Do not paste credentials in chat or commit them.**
+3. Restart the server after changing environment values. Request an OTP for a real mobile
+   using E.164 format (e.g. `+919876543210`), enter the SMS code, then complete registration.
+   SMS is billable. No real sends are performed by automated tests (they inject a test provider).
+
+Without credentials the UI reports **Phone sign-in is not configured**; there is no mock-code
+fallback and guest booking remains functional. Never expose the private Dev environment merely
+to test SMS: the local server can call Twilio over outbound HTTPS.
+
+`customers`, `customer_sessions` and `otp_challenges` are additive SQLite tables; existing
+bookings, reviews and admin accounts are preserved. Driving-licence bytes remain in SQLite, with only
+authenticated owner download access. Login is independent of existing guest booking lookup:
+it does not automatically link historical bookings or enable admin access.
+
+Before PROD, use HTTPS, restrict filesystem access to the database/WAL/backups, encrypt the
+storage volume/backups and establish a driving-licence retention/deletion policy. The application does
+not encrypt SQLite itself or automatically delete customer accounts/licence images. Obtain an
+appropriate privacy notice/consent for storing personal documents. Expired sessions/challenges
+are pruned when new OTP requests are processed. Browser tokens use sessionStorage and
+logout revokes the active customer session.
+
+The upload is required for new account registration even if the customer later chooses a
+chauffeur. Guest booking remains unchanged. Uploading an image is not document verification:
+authenticity and validity must still be checked before self-drive handover. Existing internal
+SQLite columns `resume`/`resume_mime` are retained to avoid destructive data migrations.
+
+Provider reference: [start verification](https://www.twilio.com/docs/verify/api/verification)
+and [check OTP](https://www.twilio.com/docs/verify/api/verification-check).
+
 ## Option B: Docker
 ```bash
 cp config/dev.env.example config/dev.env

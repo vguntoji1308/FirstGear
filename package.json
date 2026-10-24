@@ -24,6 +24,8 @@
     "express-rate-limit": "^7.5.0",
     "flatpickr": "^4.6.13",
     "helmet": "^8.0.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "sharp": "^0.34.5"
   }
 }

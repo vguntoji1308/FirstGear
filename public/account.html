@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phone sign-in | FirstGear Car Rentals</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/img/favicon.png" type="image/png">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/theme.js"></script>
+  <script src="/js/common.js" defer></script>
+  <script src="/js/account.js" defer></script>
+</head>
+<body class="page-solid">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main class="container" id="main">
+    <section class="page-head"><span class="eyebrow">Customer account</span><h1>Phone sign-in</h1>
+      <p class="lead">Sign-in is optional. You can still browse and <a href="/fleet">book as a guest</a>.</p>
+    </section>
+    <section class="panel account-panel">
+      <div id="account-message" role="status" aria-live="polite"></div>
+      <div id="account-signin">
+        <form id="phone-form">
+          <h2>Get a code by SMS</h2>
+          <div class="field"><label for="account-phone">Mobile number with country code</label>
+            <input id="account-phone" name="phone" type="tel" autocomplete="tel" placeholder="+919876543210" pattern="\+[1-9][0-9]{7,14}" maxlength="16" required aria-describedby="phone-help">
+            <small class="muted" id="phone-help">Use international format without spaces. Standard carrier SMS charges may apply.</small>
+          </div>
+          <button class="btn" type="submit" id="send-otp">Send OTP</button>
+        </form>
+        <form id="otp-form" class="hidden mt">
+          <h2>Verify your phone</h2>
+          <p id="otp-recipient"></p>
+          <div class="field"><label for="account-code">OTP from your SMS</label>
+            <input id="account-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4,10}" minlength="4" maxlength="10" required>
+          </div>
+          <p class="muted">Codes expire after 10 minutes. Maximum 5 attempts. Use Send OTP again after 60 seconds to request another.</p>
+          <button class="btn" type="submit">Verify OTP</button>
+        </form>
+        <form id="registration-form" class="hidden mt" enctype="multipart/form-data">
+          <h2>Complete registration</h2>
+          <p>Your phone is verified. Add your name and a driving-licence image to create an account. Staff will check your original driving licence before handing over a self-drive car.</p>
+          <div class="field"><label for="account-name">Full name</label><input id="account-name" name="name" autocomplete="name" minlength="2" maxlength="80" required></div>
+          <div class="field"><label for="account-licence">Driving-licence image (required, up to 10 MB)</label>
+            <input id="account-licence" name="licence" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/tiff,image/avif,.jpg,.jpeg,.png,.webp,.gif,.tif,.tiff,.avif" required aria-describedby="licence-help">
+            <small id="licence-help" class="muted">Upload a clear, readable image of your driving licence. JPEG, PNG, WebP, GIF, TIFF or AVIF; maximum 25 megapixels. Animated images use the first frame. PDF, Word and SVG are not supported. Images are converted to WebP and metadata is removed.</small>
+          </div>
+          <label class="check field"><input type="checkbox" id="licence-consent" name="consent" value="true" required> I agree to store my driving-licence image privately with my account for self-drive rentals. It is not published in the fleet or reviews.</label>
+          <button class="btn" type="submit">Create account</button>
+        </form>
+      </div>
+      <div id="account-profile" class="hidden">
+        <h2>Your account</h2><p id="profile-name"></p><p id="profile-phone"></p>
+        <p>Your driving-licence image is stored privately. Staff will check your original driving licence before handing over a self-drive car. Signing in does not change existing guest bookings or their reference/email lookup.</p>
+        <div class="row-actions"><button class="btn ghost" id="licence-download" type="button">Download my driving licence</button><button class="btn ghost" id="account-logout" type="button">Sign out</button><a class="btn" href="/fleet">Browse cars</a></div>
+      </div>
+    </section>
+  </main>
+  <footer id="site-footer"></footer>
+</body>
+</html>

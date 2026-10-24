@@ -135,7 +135,7 @@
   const fmtDate = (s) => new Date(`${s}T00:00:00Z`).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 
   /* ---------- Layout: header, footer, floating call, chatbot ---------- */
-  const NAV = [['/', 'Home'], ['/fleet', 'Fleet'], ['/#chauffeur', 'GearPilot'], ['/#rental-terms', 'Rental terms'], ['/reviews', 'Reviews'], ['/#contact', 'Contact'], ['/manage', 'My booking']];
+  const NAV = [['/', 'Home'], ['/fleet', 'Fleet'], ['/#chauffeur', 'GearPilot'], ['/#rental-terms', 'Rental terms'], ['/reviews', 'Reviews'], ['/#contact', 'Contact'], ['/manage', 'My booking'], ['/account', 'Sign in']];
 
   function socialLinks(cfg) {
     return Object.entries(cfg.business.social).filter(([k, u]) => SOCIAL_LABELS[k] && u).map(([k, u]) =>
@@ -144,7 +144,8 @@
 
   function buildLayout(cfg) {
     const b = cfg.business, tel = b.phone.replace(/[^+\d]/g, ''), path = location.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
-    const nav = cfg.env === 'dev' ? [...NAV, ['/docs', 'Docs']] : NAV;
+    const baseNav = path === '/admin' || path === '/admin/' ? NAV.map(([href, label]) => href === '/manage' ? ['/admin', 'Bookings'] : [href, label]) : NAV;
+    const nav = cfg.env === 'dev' ? [...baseNav, ['/docs', 'Docs']] : baseNav;
     const header = document.getElementById('site-header');
     if (header) {
       header.className = 'site-header';
@@ -157,12 +158,16 @@
         <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">${icon('menu')}</button></div></div>`;
       $('#theme-toggle').addEventListener('click', () => window.FGTheme.toggle());
       window.FGTheme.apply();
+      if (sessionStorage.getItem('fg_customer_token')) $('#nav-links a[href="/account"]').textContent = 'Account';
       const links = $$('#nav-links a');
-      const sections = path === '/' ? nav.filter(([href]) => href.startsWith('/#'))
-        .map(([href]) => ({ href, element: document.getElementById(href.slice(2)) }))
-        .filter(({ element }) => element) : [];
-      const setActive = (href) => links.forEach((link) => {
-        if (link.getAttribute('href') === href) link.setAttribute('aria-current', href.includes('#') ? 'location' : 'page');
+      const sectionLinks = new Map(nav.filter(([href]) => href.startsWith('/#')).map(([href]) => [href.slice(2), href]));
+      sectionLinks.set('fleet', '/fleet');
+      sectionLinks.set('reviews', '/reviews');
+      const sections = path === '/' ? $$('main section[id]')
+        .filter((element) => sectionLinks.has(element.id))
+        .map((element) => ({ href: sectionLinks.get(element.id), element })) : [];
+      const setActive = (href, section = false) => links.forEach((link) => {
+        if (link.getAttribute('href') === href) link.setAttribute('aria-current', section || href.includes('#') ? 'location' : 'page');
         else link.removeAttribute('aria-current');
       });
       const syncSection = () => {
@@ -171,8 +176,9 @@
           if (section.element.getBoundingClientRect().top <= header.offsetHeight + 48) active = section.href;
         }
         if (path === '/book') active = '/fleet';
+        if (path === '/admin/') active = '/admin';
         if (path === '/docs/') active = '/docs';
-        setActive(active);
+        setActive(active, path === '/' && active !== '/');
       };
       const onScroll = () => {
         header.classList.toggle('scrolled', window.scrollY > 24);
@@ -207,12 +213,11 @@
     if (footer) {
       footer.className = 'site-footer';
       footer.innerHTML = `<div class="container"><div class="footer-grid">
-        <div><a class="brand" href="/"><span class="logo-wrap"><img class="logo-light" src="/img/firstgear-logo.webp" alt="${esc(b.name)}"><img class="logo-dark" src="/img/firstgear-logo-dark.webp" alt="" aria-hidden="true"></span></a><p class="muted narrow">Your riding partner: honest prices, well-kept cars and professional GearPilot drivers, ready when you are.</p>
-          <ul class="socials" aria-label="Social media">${socialLinks(cfg)}</ul></div>
+        <div><a class="brand" href="/"><span class="logo-wrap"><img class="logo-light" src="/img/firstgear-logo.webp" alt="${esc(b.name)}"><img class="logo-dark" src="/img/firstgear-logo-dark.webp" alt="" aria-hidden="true"></span></a><p class="muted narrow">Your riding partner: honest prices, well-kept cars and professional GearPilot drivers, ready when you are.</p></div>
         <div><h4>Explore</h4><ul><li><a href="/fleet">Fleet</a></li><li><a href="/#chauffeur">GearPilot service</a></li><li><a href="/#rental-terms">Rental terms</a></li><li><a href="/manage">My booking</a></li></ul></div>
         <div><h4>Support</h4><ul><li><a href="/reviews">All reviews</a></li><li><a href="/#feedback">Give feedback</a></li><li><a href="/credits">Image credits</a></li><li><a href="/#contact">Contact</a></li><li><a href="/admin">Staff login</a></li></ul></div>
-        <div><h4>Working Hours</h4><ul><li class="muted">${esc(b.hours)}</li><li><a href="tel:${esc(tel)}">${icon('phone')} ${esc(b.phone)}</a></li><li><a href="mailto:${esc(b.email)}">${icon('mail')} ${esc(b.email)}</a></li></ul></div>
-      </div><div class="footer-bottom"><span class="fb-note">*Prices exclude tax unless shown at checkout.</span><span class="fb-copy">&copy; ${new Date().getFullYear()} ${esc(b.name)}. Demo content and placeholder media.</span></div></div>`;
+        <div><h4>Contact</h4><ul><li><a href="tel:${esc(tel)}">${icon('phone')} ${esc(b.phone)}</a></li><li><a href="mailto:${esc(b.email)}">${icon('mail')} ${esc(b.email)}</a></li></ul></div>
+      </div><div class="footer-bottom"><span class="fb-note">*Prices exclude tax unless shown at checkout.</span><span class="fb-copy">&copy; ${new Date().getFullYear()} ${esc(b.name)}.</span></div></div>`;
     }
     if (cfg.env !== 'prod') { const badge = document.createElement('div'); badge.className = 'env-badge'; badge.textContent = `${cfg.env} environment`; document.body.appendChild(badge); }
 

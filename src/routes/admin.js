@@ -5,6 +5,7 @@ const { HttpError } = require('../errors');
 const { validator, todayIso } = require('../validate');
 const { importReviews } = require('../services/reviews');
 const { signToken, requireAdmin } = require('../middleware');
+const { bookingFilters, bookingReport } = require('../services/booking-report');
 
 const BOOKING_STATUSES = ['confirmed', 'active', 'completed', 'cancelled'];
 const { BRANDS } = require('../catalog');
@@ -78,12 +79,20 @@ module.exports = function adminRoutes({ db, config, loginLimiter }) {
 
   // Bookings
   r.get('/admin/bookings', (req, res) => {
-    const status = BOOKING_STATUSES.includes(req.query.status) ? req.query.status : null;
-    const rows = db.prepare(`SELECT b.id, b.ref, b.status, b.start_date, b.end_date, b.days, b.total, b.driver_mode, b.customer_name, b.customer_email,
+    const { where, params } = bookingFilters(req.query);
+    const rows = db.prepare(`SELECT b.id, b.car_id, b.ref, b.status, b.start_date, b.end_date, b.days, b.total, b.driver_mode, b.customer_name, b.customer_email,
       b.customer_phone, b.licence_number, b.licence_country, b.licence_expiry, b.date_of_birth, b.payment_method, b.notes, b.created_at,
       c.make || ' ' || c.model AS car, d.name AS driver FROM bookings b JOIN cars c ON c.id = b.car_id LEFT JOIN drivers d ON d.id = b.driver_id
-      ${status ? 'WHERE b.status = ?' : ''} ORDER BY b.id DESC LIMIT 500`).all(...(status ? [status] : []));
+      ${where} ORDER BY b.id DESC LIMIT 500`).all(...params);
     res.json(rows);
+  });
+  r.get('/admin/bookings/trends', (req, res) => {
+    const v = validator(req.query);
+    const dataset = v.oneOf('dataset', ['live', 'sample'], { optional: true });
+    v.done();
+    if (dataset === 'sample' && (config.appEnv !== 'dev' || config.isProd)) throw new HttpError(404, 'Sample trends are available in Dev only');
+    res.set('Cache-Control', 'no-store');
+    res.json(bookingReport(db, bookingFilters(req.query), { sample: dataset === 'sample' }));
   });
   r.patch('/admin/bookings/:id', (req, res) => {
     const v = validator(req.body); v.oneOf('status', BOOKING_STATUSES);

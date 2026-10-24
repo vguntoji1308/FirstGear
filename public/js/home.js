@@ -12,6 +12,48 @@
     ['GearPilot service', '<p>GearPilot drivers drive up to 10 hours per day. Extra hours and waiting time are charged at an hourly rate. Tolls, parking and the GearPilot driver\'s accommodation on multi-city trips are not included.</p>'],
   ];
 
+  function premiumCarousel(cars, cfg) {
+    const selected = cars.filter((c) => c.image && c.model !== 'Thar')
+      .sort((a, b) => b.pricePerDay - a.pricePerDay || a.id - b.id)
+      .filter((c, i, all) => all.findIndex((other) => other.make === c.make && other.model === c.model) === i)
+      .slice(0, 5);
+    if (!selected.length) return;
+    $('#hero-art').insertAdjacentHTML('beforeend', `<section class="hero-premium" aria-label="Premium fleet carousel" aria-roledescription="carousel">
+      <div class="hero-premium-head"><h2>More from our premium fleet</h2><button class="btn small ghost" id="premium-pause" type="button">Pause</button></div>
+      <div class="premium-slides" id="premium-slides">${selected.map((c, i) => `<a class="premium-slide${i ? ' hidden' : ''}" href="/book?carId=${c.id}" aria-label="Book ${esc(c.make)} ${esc(c.model)}" data-slide="${i}">
+        <img src="${esc(c.image)}" alt="${esc(c.make)} ${esc(c.model)}" decoding="async" loading="lazy">
+        <span><strong>${esc(c.make)} ${esc(c.model)}</strong><small>${money(cfg, c.pricePerDay)} / day</small></span></a>`).join('')}</div>
+      <div class="premium-controls"><button class="btn small ghost" id="premium-prev" type="button" aria-label="Previous car">&larr;</button><span id="premium-position"></span><button class="btn small ghost" id="premium-next" type="button" aria-label="Next car">&rarr;</button></div>
+    </section>`);
+    const root = $('.hero-premium'), slides = [...root.querySelectorAll('.premium-slide')];
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let index = 0, paused = motion.matches, hovered = false, timer;
+    function display(next) {
+      index = (next + slides.length) % slides.length;
+      slides.forEach((slide, i) => slide.classList.toggle('hidden', i !== index));
+      $('#premium-position').textContent = `${index + 1} / ${slides.length}`;
+    }
+    function schedule() {
+      clearInterval(timer);
+      $('#premium-pause').textContent = paused ? 'Play' : 'Pause';
+      if (!paused && !hovered && !document.hidden && !root.contains(document.activeElement) && slides.length > 1) {
+        timer = setInterval(() => display(index + 1), 4000);
+      }
+    }
+    $('#premium-pause').addEventListener('click', () => { paused = !paused; schedule(); });
+    $('#premium-prev').addEventListener('click', () => { display(index - 1); schedule(); });
+    $('#premium-next').addEventListener('click', () => { display(index + 1); schedule(); });
+    root.addEventListener('mouseenter', () => { hovered = true; schedule(); });
+    root.addEventListener('mouseleave', () => { hovered = false; schedule(); });
+    root.addEventListener('focusin', schedule);
+    root.addEventListener('focusout', () => setTimeout(schedule, 0));
+    document.addEventListener('visibilitychange', schedule);
+    motion.addEventListener('change', () => { paused = motion.matches; schedule(); });
+    window.addEventListener('pagehide', () => clearInterval(timer));
+    window.addEventListener('pageshow', schedule);
+    display(0); schedule();
+  }
+
   document.addEventListener('vr:ready', async () => {
     const cfg = await window.VR.getConfig();
     const b = cfg.business, r = cfg.rental, tel = b.phone.replace(/[^+\d]/g, '');
@@ -39,6 +81,7 @@
 
     // Featured fleet
     const cars = await api('/cars?sort=rating');
+    premiumCarousel(cars, cfg);
     $('#stat-rating').textContent = (() => { const rated = cars.filter((c) => c.rating.average); return rated.length ? (rated.reduce((s, c) => s + c.rating.average, 0) / rated.length).toFixed(1) : '-'; })();
     document.querySelector('[data-count]').textContent = cars.length;
     $('#featured').innerHTML = cars.slice(0, 6).map((c, i) => `<article class="car-card reveal" data-delay="${i % 3}" data-car="${esc(c.color)}">
@@ -48,7 +91,7 @@
       <ul class="specs"><li>${icon('seat')} ${c.seats} seats</li><li>${icon('gear')} ${esc(c.transmission)}</li><li>${icon('fuel')} ${esc(c.fuel)}</li></ul>
       <div class="car-actions"><a class="btn small" href="/book?carId=${c.id}&amp;start=${todayStr(3)}&amp;end=${todayStr(6)}">Book</a><a class="btn small ghost" href="/fleet">Details</a></div></div></article>`).join('');
     tint();
-    $('#brands-strip').innerHTML = Object.entries(cfg.brands).map(([slug, name]) => `<a href="/fleet?brand=${slug}" aria-label="${esc(name)} cars"><img class="brand-logo" src="/img/brands/${slug}.svg" alt="${esc(name)}" loading="lazy"></a>`).join('');
+    $('#brands-strip').innerHTML = Object.entries(cfg.brands).map(([slug, name]) => `<a href="/fleet?brand=${slug}" aria-label="${esc(name)} cars"><img class="brand-mark" src="/img/brands/${slug}-mark.svg" alt="" loading="lazy"><span>${esc(name)}</span></a>`).join('');
     revealOnScroll();
 
     // Terms
@@ -95,8 +138,8 @@
     });
 
     // Contact
-    $('#contact-list').innerHTML = [['phone', '', `<a href="tel:${esc(tel)}">${esc(b.phone)}</a>`], ['mail', '', `<a href="mailto:${esc(b.email)}">${esc(b.email)}</a>`], ['pin', 'Located at', esc(b.address)], ['clock', 'Working Hours', `${esc(b.hours)}<br><span class="muted">${esc(b.supportNote)}</span>`]]
-      .map(([i, l, v]) => `<li><span class="ico">${icon(i)}</span><div>${l ? `<b>${l}</b><br>` : ''}${v}</div></li>`).join('');
+    $('#contact-list').innerHTML = [['phone', '', `<a href="tel:${esc(tel)}">${esc(b.phone)}</a>`], ['mail', '', `<a href="mailto:${esc(b.email)}">${esc(b.email)}</a>`], ['pin', 'Located at', esc(b.address)], ['clock', 'Working Hours', esc(b.hours)]]
+      .map(([i, l, v]) => `<li><span class="ico">${icon(i)}</span><div>${l ? `<b>${l}</b>` : ''}${v}</div></li>`).join('');
     $('#contact-socials').innerHTML = socialLinks(cfg);
     $('#contact-call').href = `tel:${tel}`; $('#contact-call').innerHTML = `${icon('phone')} ${esc(b.phone)}`;
     $('#contact-chat').addEventListener('click', () => $('#chat-open').click());

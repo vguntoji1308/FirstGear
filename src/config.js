@@ -69,6 +69,11 @@ module.exports = {
     model: env.OLLAMA_MODEL || '',
     timeoutMs: 120000,
   },
+  customerAuth: {
+    accountSid: env.TWILIO_ACCOUNT_SID || '',
+    authToken: env.TWILIO_AUTH_TOKEN || '',
+    verifyServiceSid: env.TWILIO_VERIFY_SERVICE_SID || '',
+  },
   rateLimit: {
     windowMs: int(env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
     max: int(env.RATE_LIMIT_MAX, 300),
@@ -83,7 +88,7 @@ module.exports = {
     phone: env.BUSINESS_PHONE || '+91 96533 13974',
     email: env.BUSINESS_EMAIL || 'firstgearcarzit@gmail.com',
     address: env.BUSINESS_ADDRESS || 'No 51/A, Ganesh Nagar, Veeriyampalayam Road, Kalapatti Post, Coimbatore 641048',
-    hours: env.BUSINESS_HOURS || 'Daily 08:00-20:00 (please confirm)',
+    hours: env.BUSINESS_HOURS || 'Daily 08:00-20:00',
     supportNote: env.BUSINESS_SUPPORT_NOTE || 'Phone line answered 24/7 for breakdowns and urgent requests.',
     social: {
       facebook: env.SOCIAL_FACEBOOK ?? 'https://www.facebook.com/myfirstgear',

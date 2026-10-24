@@ -41,10 +41,11 @@ test('PROD and non-Dev environments cannot access Docs or supporting files', asy
 
 test('API reference lists every actual API method and path explicitly', () => {
   const reference = fs.readFileSync(path.join(root, 'docs', 'API.md'), 'utf8');
-  for (const file of ['src/routes/public.js', 'src/routes/admin.js', 'src/app.js']) {
+  for (const file of ['src/routes/public.js', 'src/routes/admin.js', 'src/routes/customer.js', 'src/app.js']) {
     const source = fs.readFileSync(path.join(root, ...file.split('/')), 'utf8');
     for (const [, method, route] of source.matchAll(/(?:r|api)\.(get|post|put|patch|delete)\('([^']+)'/g)) {
-      assert.ok(reference.includes(`${method.toUpperCase()} ${route}`), `${method.toUpperCase()} /api${route}`);
+      const fullRoute = file.endsWith('/customer.js') ? `/customer${route}` : route;
+      assert.ok(reference.includes(`${method.toUpperCase()} ${fullRoute}`), `${method.toUpperCase()} /api${fullRoute}`);
     }
   }
 });

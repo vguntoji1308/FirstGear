@@ -68,6 +68,8 @@
     Object.assign($('#f-price'), { min: pMin, max: pMax, step: 100, value: pMax });
     $('#f-brand').innerHTML += Object.entries(cfg.brands).map(([slug, name]) => `<option value="${slug}">${esc(name)}</option>`).join('');
     if (params.get('brand') && cfg.brands[params.get('brand')]) $('#f-brand').value = params.get('brand');
+    if (['petrol', 'diesel', 'hybrid', 'electric', 'cng'].includes(params.get('fuel'))) $('#f-fuel').value = params.get('fuel');
+    if (['price_asc', 'price_desc', 'rating', 'newest'].includes(params.get('sort'))) $('#f-sort').value = params.get('sort');
     $('#cats').innerHTML = ['', ...cfg.categories.filter((c) => present.has(c))].map((c) => `<button type="button" data-cat="${c}" aria-pressed="${c === ''}">${c || 'All'}</button>`).join('');
     $('#cats').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; category = b.dataset.cat; $$('#cats button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); load(); });
     $('#f-start').min = todayStr(); $('#f-end').min = todayStr(1);

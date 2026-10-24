@@ -12,11 +12,11 @@ const { openDb } = require('../src/db');
 const { seed } = require('../src/seed');
 const { createApp } = require('../src/app');
 
-async function startServer(overrides = {}) {
+async function startServer(overrides = {}, appOptions = {}) {
   const cfg = { ...config, ...overrides, rateLimit: { ...config.rateLimit, ...(overrides.rateLimit || {}) } };
   const db = openDb(':memory:');
   seed(db, cfg);
-  const server = createApp({ db, config: cfg }).listen(0);
+  const server = createApp({ db, config: cfg, ...appOptions }).listen(0);
   await new Promise((r) => server.once('listening', r));
   const base = `http://127.0.0.1:${server.address().port}`;
   const call = async (method, url, body, token) => {

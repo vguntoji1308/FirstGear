@@ -9,7 +9,7 @@ const { limiter } = require('./middleware');
 const { createBot } = require('./chatbot');
 const { validator } = require('./validate');
 
-function createApp({ db, config }) {
+function createApp({ db, config, otpFetch }) {
   const app = express();
   app.disable('x-powered-by');
   if (config.trustProxy) app.set('trust proxy', 1);
@@ -40,6 +40,7 @@ function createApp({ db, config }) {
   const api = express.Router();
   api.use(require('./routes/public')({ db, config, writeLimiter }));
   api.use(require('./routes/admin')({ db, config, loginLimiter }));
+  api.use('/customer', require('./routes/customer')({ db, config, otpFetch }));
   if (config.appEnv === 'dev' && !config.isProd) {
     api.use('/sdlc', require('./routes/sdlc')({ db, config, writeLimiter }));
   }

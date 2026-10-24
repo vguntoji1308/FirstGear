@@ -15,6 +15,7 @@
 - **Mahindra Thar Roxx**: [Mahindra Thar ROXX on rocks.jpg](https://commons.wikimedia.org/wiki/File:Mahindra_Thar_ROXX_on_rocks.jpg) by The Drivers Hub, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0), via Wikimedia Commons. Background removed, resized.
 - **Tata Nexon EV**: [2020 Tata Nexon EV (India) front view.png](https://commons.wikimedia.org/wiki/File:2020_Tata_Nexon_EV_(India)_front_view.png) by DriveSpark, CC BY 3.0 (https://creativecommons.org/licenses/by/3.0), via Wikimedia Commons. Background removed, resized.
 - Other car photos and the FirstGear logo: FirstGear demo website (owner-supplied).
-- Brand badges in `public/img/brands/` are original stand-ins, not official logos.
+- Home-page manufacturer marks (`public/img/brands/*-mark.svg`) come from [Simple Icons 16.0.0](https://github.com/simple-icons/simple-icons/tree/16.0.0/icons), distributed under [CC0](https://creativecommons.org/publicdomain/zero/1.0/). Source slugs: `suzuki` (saved as `maruti-suzuki-mark.svg`, Suzuki mark used for Maruti Suzuki), `toyota`, `hyundai`, `kia`, `tata`, `mahindra`. Downloaded from `https://cdn.jsdelivr.net/npm/simple-icons@16.0.0/icons/<slug>.svg` and served locally, unchanged; CSS renders monochrome marks appropriate for each theme. Trademark rights remain with the respective companies; CC0 does not grant trademark endorsement or unrestricted brand use.
+- Other brand badges in `public/img/brands/` remain original stand-ins.
 
 CC BY-SA 4.0 requires attribution (shown on `/credits`) and share-alike for adaptations of the photos themselves.

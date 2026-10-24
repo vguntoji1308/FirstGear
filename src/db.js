@@ -53,6 +53,19 @@ CREATE TABLE IF NOT EXISTS customer_reviews (
   text TEXT NOT NULL DEFAULT '', review_date TEXT NOT NULL, source TEXT NOT NULL DEFAULT 'google', url TEXT,
   hash TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE IF NOT EXISTS customers (
+  id INTEGER PRIMARY KEY, phone TEXT UNIQUE NOT NULL, name TEXT NOT NULL,
+  resume BLOB NOT NULL, resume_mime TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS customer_sessions (
+  token_hash TEXT PRIMARY KEY, customer_id INTEGER REFERENCES customers(id) ON DELETE CASCADE,
+  phone TEXT NOT NULL, purpose TEXT NOT NULL, expires_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS otp_challenges (
+  id TEXT PRIMARY KEY, phone TEXT NOT NULL, status TEXT NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_otp_phone_date ON otp_challenges(phone, created_at);
 `;
 
 function openDb(file) {

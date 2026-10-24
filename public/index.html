@@ -20,7 +20,7 @@
   <script src="/js/reviews-ui.js" defer></script>
   <script src="/js/home.js" defer></script>
 </head>
-<body>
+<body class="home-page">
   <a class="skip-link" href="#main">Skip to content</a>
   <header id="site-header"></header>
   <main id="main">
@@ -48,7 +48,7 @@
           </form>
           <div class="hero-badges"><span class="chip" id="chip-phone"></span><span class="chip" id="chip-free"></span></div>
         </div>
-        <div class="reveal" data-delay="2" id="hero-art" aria-hidden="true"></div>
+        <div class="reveal" data-delay="2" id="hero-art"></div>
       </div>
     </section>
 
@@ -61,12 +61,18 @@
 
     <section class="section" id="fleet" aria-labelledby="fleet-title">
       <div class="container">
-        <div class="section-head reveal"><div><span class="eyebrow">The fleet</span><h2 id="fleet-title">Find your next ride</h2><p class="lead">From city hatchbacks to 7-seater family cars and rugged SUVs. Every car is rated by real customers.</p></div><a class="btn ghost" href="/fleet">View full fleet</a></div>
+        <div class="section-head fleet-heading reveal"><div><span class="eyebrow">The fleet</span><h2 id="fleet-title">Find your next ride</h2><p class="lead"><strong><em>From city hatchbacks to 7-seater family cars and rugged SUVs. Every car is rated by real customers.</em></strong></p></div><a class="btn ghost" href="/fleet">View full fleet</a></div>
         <div class="grid" id="featured"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
       </div>
     </section>
 
     <section class="section brands-section" aria-labelledby="brands-title"><div class="container"><h2 id="brands-title" class="eyebrow">Brands in our fleet</h2><div class="brands-strip reveal" id="brands-strip"></div></div></section>
+    <section class="section ev-section" aria-labelledby="ev-title"><div class="container ev-banner">
+      <div><span class="eyebrow">Go electric</span><h2 id="ev-title">Skip the pump. Keep the adventure.</h2>
+        <p>Make your next city escape electric with our Tata Nexon EV. Explore an economical way to travel, with zero tailpipe emissions.</p>
+        <small class="muted">Trip costs depend on rental rates, charging tariffs and distance. Plan charging stops before longer journeys.</small></div>
+      <a class="btn" href="/fleet?fuel=electric&amp;sort=price_asc">Explore EV cars &rarr;</a>
+    </div></section>
 
     <section class="section alt" id="why" aria-labelledby="why-title">
       <div class="container">
@@ -151,12 +157,12 @@
     </section>
 
     <section class="section alt" id="contact" aria-labelledby="contact-title">
-      <div class="container split">
+      <div class="container contact-layout">
         <div class="reveal"><span class="eyebrow">Contact</span><h2 id="contact-title">We're here, any time</h2>
-          <ul class="contact-list" id="contact-list"></ul>
-          <h3>Follow us</h3><ul class="socials" id="contact-socials" aria-label="Social media"></ul></div>
-        <div class="panel reveal" data-delay="2"><h3>Need an answer now?</h3><p class="muted">Our phone line is answered around the clock for urgent requests, breakdowns and last-minute bookings.</p>
-          <a class="btn" id="contact-call" href="#"></a> <button class="btn ghost" type="button" id="contact-chat">Chat with us</button></div>
+          <ul class="contact-list" id="contact-list"></ul></div>
+        <div class="panel contact-answer reveal" data-delay="2"><div><h3>Need an answer now?</h3><p class="muted">Our phone line is answered around the clock for urgent requests, breakdowns and last-minute bookings.</p></div>
+          <div class="contact-answer-actions"><a class="btn" id="contact-call" href="#"></a><button class="btn ghost" type="button" id="contact-chat">Chat with us</button></div></div>
+        <div><h3>Follow us</h3><ul class="socials" id="contact-socials" aria-label="Social media"></ul></div>
       </div>
     </section>
   </main>

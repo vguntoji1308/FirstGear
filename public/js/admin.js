@@ -3,9 +3,11 @@
   const { api, esc, $, $$, notice, money, fmtDate, clearFieldErrors, showFieldErrors } = window.VR;
   const KEY = 'vr_admin_token'; // sessionStorage: cleared when the tab closes
   let cfg, token = sessionStorage.getItem(KEY), tab = 'bookings';
+  const bookingState = { period: 'all', from: '', to: '', carId: '', dataset: 'live' };
+  let viewRequest = 0;
   const call = (path, opts = {}) => api(path, { ...opts, token }).catch((e) => { if (e.status === 401 && token) logout(); throw e; });
 
-  const TABS = { bookings: 'Bookings', cars: 'Cars', drivers: 'GearPilot drivers', feedback: 'Feedback', reviews: 'Car ratings', import: 'Import reviews' };
+  const TABS = { bookings: 'Bookings', dashboard: 'Booking dashboard', cars: 'Cars', drivers: 'GearPilot drivers', feedback: 'Feedback', reviews: 'Car ratings', import: 'Import reviews' };
 
   function logout() { token = null; sessionStorage.removeItem(KEY); $('#app-view').classList.add('hidden'); $('#login-view').classList.remove('hidden'); }
   const table = (cols, rows) => `<div class="table-wrap"><table><thead><tr>${cols.map((c) => `<th scope="col">${c}</th>`).join('')}</tr></thead><tbody>${rows.join('') || `<tr><td colspan="${cols.length}" class="muted">Nothing here yet.</td></tr>`}</tbody></table></div>`;
@@ -16,12 +18,48 @@
     $('#kpis').innerHTML = [['Active cars', s.cars], ['Bookings', s.bookings], ['Upcoming', s.upcoming], ['Revenue', money(cfg, s.revenue)], ['Feedback to review', s.pendingFeedback]].map(([l, v]) => `<div class="kpi"><b>${esc(v)}</b>${l}</div>`).join('');
   }
 
+  function bookingControls(cars, dashboard) {
+    return `<form id="booking-filters" class="panel booking-filters">
+      <div class="form-grid">
+        <div class="field"><label for="bk-period">Bookings</label><select id="bk-period" name="period">${[['all', 'All'], ['current', 'Current'], ['past', 'Past']].map(([value, label]) => `<option value="${value}"${bookingState.period === value ? ' selected' : ''}>${label}</option>`).join('')}</select></div>
+        <div class="field"><label for="bk-car">Car</label><select id="bk-car" name="carId"><option value="">All cars</option>${cars.map((c) => `<option value="${c.id}"${String(c.id) === bookingState.carId ? ' selected' : ''}>${esc(c.make)} ${esc(c.model)} (#${c.id})${c.active ? '' : ' - hidden'}</option>`).join('')}</select></div>
+        <div class="field"><label for="bk-from">Pickup date from (inclusive)</label><input id="bk-from" name="from" type="date" value="${esc(bookingState.from)}"></div>
+        <div class="field"><label for="bk-to">Pickup date to (inclusive)</label><input id="bk-to" name="to" type="date" value="${esc(bookingState.to)}"></div>
+        ${dashboard && cfg.env === 'dev' ? `<div class="field"><label for="bk-dataset">Chart data</label><select id="bk-dataset" name="dataset"><option value="live"${bookingState.dataset === 'live' ? ' selected' : ''}>Real bookings</option><option value="sample"${bookingState.dataset === 'sample' ? ' selected' : ''}>Sample data (no database changes)</option></select></div>` : ''}
+      </div>
+      <div class="row-actions"><button class="btn small" type="submit">Apply filters</button>${btn('Reset', 'data-booking-reset')}</div>
+      <p class="muted mt">Current: upcoming/ongoing confirmed or active rentals returning today or later. Past: completed, cancelled or return date before today (UTC). Date filters use pickup dates.</p>
+      <div id="booking-filter-error" role="alert"></div>
+    </form>`;
+  }
+
+  function bookingQuery(dashboard) {
+    const query = new URLSearchParams();
+    for (const key of ['period', 'from', 'to', 'carId']) if (bookingState[key]) query.set(key, bookingState[key]);
+    if (dashboard) query.set('dataset', bookingState.dataset);
+    return query;
+  }
+
+  function barChart(title, rows) {
+    const max = Math.max(1, ...rows.map((r) => r.count));
+    return `<section class="panel booking-chart"><h2>${title}</h2>${rows.length ? `<ul class="booking-bars" aria-label="${title}">${rows.map((r) => `<li><span class="booking-bar-label">${esc(r.label)}</span><div class="booking-bar-track"><meter min="0" max="${max}" value="${r.count}" aria-label="${esc(r.label)}: ${r.count} bookings">${r.count}</meter></div><b>${r.count}</b></li>`).join('')}</ul>` : '<p class="muted">No bookings match these filters.</p>'}</section>`;
+  }
+
   const views = {
     async bookings() {
-      const rows = await call('/admin/bookings');
-      return table(['Ref', 'Customer', 'Car', 'Dates', 'Driver', 'Total', 'Status', 'Actions'], rows.map((b) => `<tr><td>${esc(b.ref)}</td><td>${esc(b.customer_name)}<br><small class="muted">${esc(b.customer_email)}<br>${esc(b.customer_phone)}</small></td><td>${esc(b.car)}</td>
+      const [rows, cars] = await Promise.all([call(`/admin/bookings?${bookingQuery(false)}`), call('/admin/cars')]);
+      return bookingControls(cars, false) + `<p>${rows.length} result${rows.length === 1 ? '' : 's'}${rows.length === 500 ? ' (latest 500; narrow filters for older records)' : ''}.</p>` + table(['Ref', 'Customer', 'Car', 'Dates', 'Driver', 'Total', 'Status', 'Actions'], rows.map((b) => `<tr><td>${esc(b.ref)}</td><td>${esc(b.customer_name)}<br><small class="muted">${esc(b.customer_email)}<br>${esc(b.customer_phone)}</small></td><td>${esc(b.car)} <small>#${b.car_id}</small></td>
         <td>${fmtDate(b.start_date)} &rarr; ${fmtDate(b.end_date)}</td><td>${b.driver_mode === 'chauffeur' ? esc(b.driver || 'GearPilot') : `Self<br><small class="muted">${esc(b.licence_number || '')}</small>`}</td><td>${money(cfg, b.total)}</td>
         <td><span class="pill ${esc(b.status)}">${esc(b.status)}</span></td><td><div class="row-actions"><label class="sr-only" for="st${b.id}">Status for ${esc(b.ref)}</label><select id="st${b.id}" data-status="${b.id}">${['confirmed', 'active', 'completed', 'cancelled'].map((s) => `<option${s === b.status ? ' selected' : ''}>${s}</option>`).join('')}</select></div></td></tr>`));
+    },
+    async dashboard() {
+      const [report, cars] = await Promise.all([call(`/admin/bookings/trends?${bookingQuery(true)}`), call('/admin/cars')]);
+      const top = report.cars.find((c) => c.count > 0);
+      return bookingControls(cars, true)
+        + (report.sample ? '<div class="alert info"><strong>Sample data only:</strong> synthetic rentals for the current UTC year using up to five fleet cars. No bookings are saved; real KPIs above are unchanged.</div>' : '')
+        + `<p>${report.booked} non-cancelled bookings; ${report.cancelled} cancelled excluded from charts. Monthly trend is grouped by pickup month, not the date the reservation was created. Months without matching records are omitted.</p>
+          <p><strong>Most frequently booked:</strong> ${top ? `${esc(top.car)} (#${top.carId}) - ${top.count} bookings${report.cars.filter((c) => c.count === top.count).length > 1 ? ' (tied)' : ''}` : 'No bookings for these filters.'}</p>
+          <div class="booking-charts">${barChart('Monthly booking trend', report.months.map((r) => ({ label: r.month, count: r.count })))}${barChart('Bookings by car', report.cars.map((r) => ({ label: `${r.car} (#${r.carId})`, count: r.count })))}</div>`;
     },
     async cars() {
       const rows = await call('/admin/cars');
@@ -53,9 +91,18 @@
   };
 
   async function show(name) {
+    const request = ++viewRequest;
     tab = name;
     $('#tabs').innerHTML = Object.entries(TABS).map(([k, v]) => `<button role="tab" type="button" data-tab="${k}" aria-selected="${k === name}">${v}</button>`).join('');
-    try { $('#panel').innerHTML = await views[name](); await showKpis(); } catch (e) { notice($('#panel'), 'error', e.message); }
+    try {
+      const html = await views[name]();
+      if (request !== viewRequest || !token) return;
+      $('#panel').innerHTML = html;
+      $$('.booking-bar-track meter').forEach((meter) => {
+        meter.parentElement.style.setProperty('--bar-size', `${Number(meter.value) / Number(meter.max) * 100}%`);
+      });
+      await showKpis();
+    } catch (e) { if (request === viewRequest) notice($('#panel'), 'error', e.message); }
   }
 
   async function carDialog(car) {
@@ -87,7 +134,8 @@
     $('#panel').addEventListener('click', (e) => {
       const t = e.target.closest('button'); if (!t) return;
       const d = t.dataset;
-      if ('carNew' in d) carDialog(null);
+      if ('bookingReset' in d) { Object.assign(bookingState, { period: 'all', from: '', to: '', carId: '', dataset: 'live' }); show(tab); }
+      else if ('carNew' in d) carDialog(null);
       else if (d.carEdit) carDialog(window.__cars.find((c) => c.id === +d.carEdit));
       else if (d.carDel) { if (confirm('Hide this car from customers? Booking history is kept.')) mutate(() => call(`/admin/cars/${d.carDel}`, { method: 'DELETE' })); }
       else if (d.driver) mutate(() => call(`/admin/drivers/${d.driver}`, { method: 'PATCH', body: { active: d.active === '1' } }));
@@ -96,6 +144,19 @@
       else if (d.rvDel) { if (confirm('Delete this rating?')) mutate(() => call(`/admin/reviews/${d.rvDel}`, { method: 'DELETE' })); }
     });
     $('#panel').addEventListener('submit', async (e) => {
+      if (e.target.id === 'booking-filters') {
+        e.preventDefault();
+        const data = new FormData(e.target);
+        const from = data.get('from'), to = data.get('to');
+        if (from && to && from > to) {
+          notice($('#booking-filter-error'), 'error', 'End date must be on or after start date.');
+          return;
+        }
+        for (const key of ['period', 'carId', 'from', 'to']) bookingState[key] = data.get(key);
+        if (data.has('dataset')) bookingState.dataset = data.get('dataset');
+        await show(tab);
+        return;
+      }
       if (e.target.id === 'rv-import') {
         e.preventDefault();
         let list;
