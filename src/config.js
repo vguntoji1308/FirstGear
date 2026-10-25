@@ -74,6 +74,10 @@ module.exports = {
     authToken: env.TWILIO_AUTH_TOKEN || '',
     verifyServiceSid: env.TWILIO_VERIFY_SERVICE_SID || '',
   },
+  googlePlaces: {
+    apiKey: env.GOOGLE_PLACES_API_KEY || '',
+    placeId: env.GOOGLE_PLACE_ID || '',
+  },
   rateLimit: {
     windowMs: int(env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
     max: int(env.RATE_LIMIT_MAX, 300),
@@ -84,6 +88,7 @@ module.exports = {
     name: env.BUSINESS_NAME || 'FirstGear Car Rentals',
     // Public link to the Google Maps listing ("View on Google"). Set GOOGLE_REVIEWS_URL to your own listing link.
     googleReviewsUrl: env.GOOGLE_REVIEWS_URL || 'https://www.google.com/maps/search/?api=1&query=First+Gear+Cars+Coimbatore',
+    googleRatingUrl: env.GOOGLE_PLACE_ID ? `https://search.google.com/local/writereview?placeid=${encodeURIComponent(env.GOOGLE_PLACE_ID)}` : (env.GOOGLE_REVIEWS_URL || 'https://www.google.com/maps/search/?api=1&query=First+Gear+Cars+Coimbatore'),
     // Defaults come from the FirstGear demo site; override with BUSINESS_PHONE (E.164 style).
     phone: env.BUSINESS_PHONE || '+91 96533 13974',
     email: env.BUSINESS_EMAIL || 'firstgearcarzit@gmail.com',

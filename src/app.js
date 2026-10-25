@@ -9,7 +9,7 @@ const { limiter } = require('./middleware');
 const { createBot } = require('./chatbot');
 const { validator } = require('./validate');
 
-function createApp({ db, config, otpFetch }) {
+function createApp({ db, config, otpFetch, googleFetch }) {
   const app = express();
   app.disable('x-powered-by');
   if (config.trustProxy) app.set('trust proxy', 1);
@@ -41,6 +41,20 @@ function createApp({ db, config, otpFetch }) {
   api.use(require('./routes/public')({ db, config, writeLimiter }));
   api.use(require('./routes/admin')({ db, config, loginLimiter }));
   api.use('/customer', require('./routes/customer')({ db, config, otpFetch }));
+  api.get('/google-reviews', limiter({ windowMs: 60000, max: 10 }), async (_req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    const settings = config.googlePlaces;
+    if (!settings?.apiKey || !settings?.placeId) return next(new HttpError(503, 'Google reviews are not configured. Set GOOGLE_PLACES_API_KEY and GOOGLE_PLACE_ID on the server.'));
+    try {
+      const result = await require('./services/google-places').fetchGoogleReviews({ ...settings, fetchImpl: googleFetch });
+      const items = result.rows.sort((a, b) => b.rating - a.rating || b.date.localeCompare(a.date))
+        .map((r, i) => ({ ...r, id: `google-${i}`, source: 'google' }));
+      const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      items.forEach((r) => { distribution[r.rating]++; });
+      res.json({ items, summary: { count: items.length, average: items.length ? Math.round(items.reduce((sum, r) => sum + r.rating, 0) / items.length * 10) / 10 : null, distribution },
+        listingRating: result.rating, listingCount: result.total, googleUrl: result.mapsUrl || config.business.googleReviewsUrl });
+    } catch (err) { next(new HttpError(502, err.message)); }
+  });
   if (config.appEnv === 'dev' && !config.isProd) {
     api.use('/sdlc', require('./routes/sdlc')({ db, config, writeLimiter }));
   }

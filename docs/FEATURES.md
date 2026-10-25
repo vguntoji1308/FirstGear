@@ -14,9 +14,11 @@ Mobile layouts stack search/date fields and booking details, use touch-sized con
 avoid squeezed cards. SDLC Studio remains a separate Dev tool at `/sdlc`, not a customer tab.
 The home page uses compact 24-36px section padding, smaller heading/card gaps and a
 content-sized hero instead of a full-screen minimum, reducing scrolling without hiding content.
-Alongside the hero Thar artwork, a compact carousel shows up to five distinct higher-priced
-fleet models using existing car images. It advances every four seconds, pauses on hover/focus
-or a hidden browser tab, supports previous/next and pause/play, and starts paused for reduced motion.
+The hero image area cycles through the Thar and up to five distinct higher-priced fleet models,
+with full-size images and circular position dots instead of arrows or a numeric counter.
+It advances automatically every two seconds with slow 1.8-second transitions and no pause button.
+Hovering over the car image pauses rotation; leaving resumes it. Keyboard focus, a hidden
+browser tab and reduced-motion preferences also pause rotation for accessibility.
 Contact details share one desktop row, followed by a full-width answer/call/chat banner.
 They stack on smaller screens. Social links remain in Contact only; footer hours and social
 links are removed.
@@ -33,6 +35,7 @@ links are removed.
 - Source quirks kept as-is: transmission shows "Manual" for AMT variants and the Nexon EV, as listed on the site. Duplicate listings (e.g. three Glanza, several Ertiga) are kept as separate cars, as on the source.
 
 ## Customer reviews
+- `/reviews` defaults to live Google Places reviews, highest rating first, with reviewer attribution links and no database persistence. Google supplies up to five selected reviews, not the full listing. Website feedback and historical imports remain in a separate view. Configure Google credentials as described in `docs/GOOGLE_REVIEWS.md`.
 - The Reviews navigation tab opens `/reviews`. Consented website feedback appears immediately in Dev with a **Pending approval (Dev only)** label; PROD still requires admin approval. Feedback without publishing consent is never included. The home list refreshes after submission; the full page has a Refresh reviews button for API testing. Dev rating summaries include pending feedback. Reviews persist in SQLite (`feedback` for website feedback, `customer_reviews` for Google imports, `reviews` for per-car ratings). Per-car ratings remain separate from business reviews and are returned by `GET /api/cars/:id`.
 - Home page shows the **5 most recent reviews** in coloured cards with a **View all reviews** button and a **See us on Google** link. `/reviews` lists every review with the rating breakdown (click a bar to filter by stars) and a **Move to top** button on each review.
 - **Highlighted words:** praise (green), service (amber), price (blue) and car (violet) words such as *polite*, *spotless*, *on time*, *value for money* are highlighted automatically; a colour key is shown on `/reviews`.

@@ -25,7 +25,7 @@ function mapNew(json) {
     rating: r.rating,
     text: (r.originalText && r.originalText.text) || (r.text && r.text.text),
     date: String(r.publishTime || '').slice(0, 10),
-    url: r.googleMapsUri,
+    url: (r.authorAttribution && r.authorAttribution.uri) || r.googleMapsUri,
   })).filter(Boolean);
   return { rows, rating: json.rating ?? null, total: json.userRatingCount ?? null, mapsUrl: json.googleMapsUri || null };
 }
@@ -55,7 +55,9 @@ async function fetchGoogleReviews({ apiKey, placeId, api = 'new', baseUrl = 'htt
     // the key goes in a header (not the URL) so it cannot end up in logs or proxies' access lines
     init = { headers: { 'X-Goog-Api-Key': apiKey, 'X-Goog-FieldMask': 'rating,userRatingCount,googleMapsUri,reviews' } };
   }
-  const res = await fetchImpl(url, { ...init, signal: AbortSignal.timeout(20000) });
+  let res;
+  try { res = await fetchImpl(url, { ...init, redirect: 'error', signal: AbortSignal.timeout(20000) }); }
+  catch { throw new Error('Google Places could not be reached. Please try again later.'); }
   const body = await res.json().catch(() => ({}));
   if (api === 'legacy') {
     if (body.status && body.status !== 'OK') throw new Error(`Google Places (legacy) returned ${body.status}${body.error_message ? ': ' + body.error_message : ''}`);
@@ -63,7 +65,7 @@ async function fetchGoogleReviews({ apiKey, placeId, api = 'new', baseUrl = 'htt
   }
   if (!res.ok) {
     const e = body.error || {};
-    throw new Error(`Google Places returned ${res.status}${e.status ? ' ' + e.status : ''}${e.message ? ': ' + e.message : ''}`);
+    throw new Error(`Google Places returned ${res.status}${e.status ? ' ' + e.status : ''}`);
   }
   return mapNew(body);
 }

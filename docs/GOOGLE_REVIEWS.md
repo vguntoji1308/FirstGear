@@ -1,5 +1,23 @@
 # Google reviews sync (optional)
 
+## Live reviews page
+
+**Rate Us on Google** opens Google's review-writing page when `GOOGLE_PLACE_ID` is configured.
+Until then it opens the configured Google listing link (or the default business search).
+
+`/reviews` defaults to **Google reviews**, fetched server-side from Places API (New) via
+`GET /api/google-reviews`, sorted highest rating first (newest first for equal ratings).
+Configure `GOOGLE_PLACES_API_KEY` and `GOOGLE_PLACE_ID` below and restart the server.
+This live view does not save reviews to SQLite, does not cache the response and provides
+reviewer profile links and Google Maps attribution. Google returns at most five selected
+reviews, not the full listing; sorting applies only to those returned. The listing's overall
+rating/count is shown separately from the displayed-review summary.
+
+The second view retains website feedback and previously imported reviews, including Dev
+pending feedback. Missing credentials or Google errors are shown explicitly; sample reviews
+are never substituted in the live Google view. API requests are billable; configure quotas
+and billing alerts before public exposure.
+
 `npm run reviews:sync` pulls your latest Google reviews through Google's **official Places API** and adds them to the site (home page shows the 5 newest, `/reviews` lists all). It only adds: existing reviews are never deleted, and duplicates are skipped.
 
 ## 1. One-time Google setup

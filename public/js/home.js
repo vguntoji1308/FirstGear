@@ -13,38 +13,45 @@
   ];
 
   function premiumCarousel(cars, cfg) {
-    const selected = cars.filter((c) => c.image && c.model !== 'Thar')
+    const premium = cars.filter((c) => c.image && c.model !== 'Thar')
       .sort((a, b) => b.pricePerDay - a.pricePerDay || a.id - b.id)
       .filter((c, i, all) => all.findIndex((other) => other.make === c.make && other.model === c.model) === i)
       .slice(0, 5);
+    const thar = cars.find((c) => c.model === 'Thar' && c.image);
+    const selected = [...(thar ? [thar] : []), ...premium];
     if (!selected.length) return;
-    $('#hero-art').insertAdjacentHTML('beforeend', `<section class="hero-premium" aria-label="Premium fleet carousel" aria-roledescription="carousel">
-      <div class="hero-premium-head"><h2>More from our premium fleet</h2><button class="btn small ghost" id="premium-pause" type="button">Pause</button></div>
-      <div class="premium-slides" id="premium-slides">${selected.map((c, i) => `<a class="premium-slide${i ? ' hidden' : ''}" href="/book?carId=${c.id}" aria-label="Book ${esc(c.make)} ${esc(c.model)}" data-slide="${i}">
-        <img src="${esc(c.image)}" alt="${esc(c.make)} ${esc(c.model)}" decoding="async" loading="lazy">
+    $('#hero-art').innerHTML = `<section class="hero-premium" aria-label="Premium fleet carousel" aria-roledescription="carousel">
+      <div class="premium-slides" id="premium-slides" aria-live="off">${selected.map((c, i) => `<a class="premium-slide${i ? '' : ' is-current'}" href="/book?carId=${c.id}" aria-label="Book ${esc(c.make)} ${esc(c.model)}" data-slide="${i}"${i ? ' inert aria-hidden="true"' : ''}>
+        <img src="${esc(c.model === 'Thar' ? '/img/cars/thumb/hero-48.webp' : c.image)}" alt="${esc(c.make)} ${esc(c.model)}" decoding="async" loading="eager">
         <span><strong>${esc(c.make)} ${esc(c.model)}</strong><small>${money(cfg, c.pricePerDay)} / day</small></span></a>`).join('')}</div>
-      <div class="premium-controls"><button class="btn small ghost" id="premium-prev" type="button" aria-label="Previous car">&larr;</button><span id="premium-position"></span><button class="btn small ghost" id="premium-next" type="button" aria-label="Next car">&rarr;</button></div>
-    </section>`);
+      <div class="premium-controls"><div class="premium-dots" aria-label="Car position">${selected.map((c, i) => `<span class="premium-dot${i ? '' : ' is-current'}" aria-label="${esc(c.make)} ${esc(c.model)}"${i ? '' : ' aria-current="true"'}></span>`).join('')}</div></div>
+    </section>`;
     const root = $('.hero-premium'), slides = [...root.querySelectorAll('.premium-slide')];
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let index = 0, paused = motion.matches, hovered = false, timer;
     function display(next) {
       index = (next + slides.length) % slides.length;
-      slides.forEach((slide, i) => slide.classList.toggle('hidden', i !== index));
-      $('#premium-position').textContent = `${index + 1} / ${slides.length}`;
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('is-current', i === index);
+        slide.inert = i !== index;
+        slide.setAttribute('aria-hidden', String(i !== index));
+      });
+      root.querySelectorAll('.premium-dot').forEach((dot, i) => {
+        dot.classList.toggle('is-current', i === index);
+        if (i === index) dot.setAttribute('aria-current', 'true');
+        else dot.removeAttribute('aria-current');
+      });
     }
     function schedule() {
       clearInterval(timer);
-      $('#premium-pause').textContent = paused ? 'Play' : 'Pause';
       if (!paused && !hovered && !document.hidden && !root.contains(document.activeElement) && slides.length > 1) {
-        timer = setInterval(() => display(index + 1), 4000);
+        timer = setInterval(() => display(index + 1), 2000);
       }
     }
-    $('#premium-pause').addEventListener('click', () => { paused = !paused; schedule(); });
-    $('#premium-prev').addEventListener('click', () => { display(index - 1); schedule(); });
-    $('#premium-next').addEventListener('click', () => { display(index + 1); schedule(); });
-    root.addEventListener('mouseenter', () => { hovered = true; schedule(); });
-    root.addEventListener('mouseleave', () => { hovered = false; schedule(); });
+    root.querySelectorAll('.premium-slide img').forEach((image) => {
+      image.addEventListener('mouseenter', () => { hovered = true; schedule(); });
+      image.addEventListener('mouseleave', () => { hovered = false; schedule(); });
+    });
     root.addEventListener('focusin', schedule);
     root.addEventListener('focusout', () => setTimeout(schedule, 0));
     document.addEventListener('visibilitychange', schedule);

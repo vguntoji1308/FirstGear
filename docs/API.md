@@ -22,6 +22,7 @@ Status codes: 400 validation, 401/403 auth, 404 not found, 409 conflict (availab
 | `GET /testimonials` | Approved, consented testimonials + average |
 | `GET /reviews?limit=5` | Imported Google reviews + consented website feedback, newest first, with `summary {average, count, distribution, demo}`, `devPreview`, item `pendingApproval` and `googleUrl`. Dev includes pending feedback in items/summary; other environments require approval. Omit `limit` for all; supplied limit must be 1-500 |
 | `POST /chat` | `{message}` → `{text, suggestions[], handoff, intent}` |
+| `GET /google-reviews` | Fetch live Google Places reviews, sorted rating descending then newest date. Up to five Google-selected reviews, with reviewer attribution URLs, displayed-review summary and separate listing rating/count. No SQLite writes or response caching. Missing Google credentials: 503; provider failure: 502. Limited to 10 requests/IP/minute |
 
 ### Optional customer phone accounts
 

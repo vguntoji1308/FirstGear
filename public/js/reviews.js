@@ -1,7 +1,7 @@
 'use strict';
 (function () {
   const { api, $, $$, notice, safeUrl, revealOnScroll } = window.VR;
-  let all = [], filter = 0;
+  let all = [], filter = 0, source = 'google';
 
   function renderList() {
     const items = filter ? all.filter((r) => r.rating === filter) : all;
@@ -29,20 +29,33 @@
     button.disabled = true;
     $('#rv-error').textContent = '';
     try {
-      const data = await api('/reviews');
+      const data = await api(source === 'google' ? '/google-reviews' : '/reviews');
       all = data.items;
       renderSummary(data.summary);
       $('#rv-note').textContent = '';
+      if (source === 'google') notice($('#rv-note'), 'info', `Google Maps reviews: up to five reviews supplied by Google, sorted highest rating first. Rating bars cover these displayed reviews only.${data.listingRating != null ? ` Google listing: ${data.listingRating}/5 from ${data.listingCount ?? '?'} ratings.` : ''}`);
       if (data.summary.demo) notice($('#rv-note'), 'info', 'These are sample reviews. Real reviews replace them once added.');
       if (data.devPreview) notice($('#rv-note'), 'info', 'Dev preview includes consented feedback pending approval, including in the rating summary. PROD shows only approved feedback.');
       $('#google-link').href = safeUrl(data.googleUrl);
       renderList();
-    } catch (err) { notice($('#rv-error'), 'error', `Could not refresh reviews: ${err.message}`); }
+    } catch (err) {
+      all = []; renderList(); $('#rv-summary').textContent = ''; $('#rv-note').textContent = '';
+      notice($('#rv-error'), 'error', `Could not refresh reviews: ${err.message}`);
+    }
     finally { button.disabled = false; }
   }
 
   document.addEventListener('vr:ready', async () => {
+    const cfg = await window.VR.getConfig();
+    $('#google-rate-link').href = safeUrl(cfg.business.googleRatingUrl);
     $('#rv-refresh').addEventListener('click', refresh);
+    document.querySelectorAll('[data-source]').forEach((button) => button.addEventListener('click', async () => {
+      if ($('#rv-refresh').disabled) return;
+      source = source === 'google' ? 'website' : 'google'; filter = 0;
+      button.setAttribute('aria-pressed', String(source === 'website'));
+      button.textContent = source === 'website' ? 'Back to Google review list' : 'Website feedback & imported reviews';
+      await refresh();
+    }));
     await refresh();
     document.addEventListener('click', (e) => {
       const star = e.target.closest('[data-star]');

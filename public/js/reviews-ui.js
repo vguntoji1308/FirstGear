@@ -36,7 +36,8 @@
     return `<article class="rv-card rv-c${c} reveal" data-delay="${delay % 3}" data-rating="${r.rating}">
       <header class="rv-head"><span class="avatar rv-av">${esc((r.author || '?')[0]).toUpperCase()}</span>
         <div class="rv-who"><strong>${esc(r.author)}</strong><small>${esc(fmt(r.date))} ${sourceBadge(r.source)}${r.pendingApproval ? ' <span class="src">Pending approval (Dev only)</span>' : ''}</small></div>${starRow(r.rating)}</header>
-      <p class="rv-text">${r.text ? highlight(r.text) : '<span class="muted">Rated this business without writing a review.</span>'}</p>
+      <p class="rv-text">${r.text ? (r.source === 'google' ? esc(r.text) : highlight(r.text)) : '<span class="muted">Rated this business without writing a review.</span>'}</p>
+      ${r.source === 'google' && r.url ? `<a href="${esc(window.VR.safeUrl(r.url))}" target="_blank" rel="noopener noreferrer">View on Google Maps</a>` : ''}
       ${moveToTop ? '<div class="rv-actions"><button class="rv-top" type="button" data-top aria-label="Move to top of the reviews page">&uarr; Move to top</button></div>' : ''}
     </article>`;
   }
