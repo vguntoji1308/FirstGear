@@ -28,6 +28,8 @@ The app reads **only environment variables**. `APP_ENV` (`dev` | `prod`) picks a
 | `JWT_EXPIRES_IN` | Admin session length | 8h |
 | `CORS_ORIGINS` | Comma-separated allowed origins | empty (same-origin) |
 | `TRUST_PROXY` | Trust `X-Forwarded-*` | true in prod |
+| `PORTAL` | `customer` serves the public site only, `admin` serves `/admin` + admin API only, `all` serves both. Run two instances on the same DB path or separate URLs to split them | all |
+| `ENABLE_ONLINE_BOOKING` | Online quote/booking/payment choice and customer accounts. Off for the MVP: customers go through `/checklist` to WhatsApp and staff add bookings in `/admin` | false |
 | `RATE_LIMIT_MAX` / `_WRITE_MAX` / `_LOGIN_MAX` / `_WINDOW_MS` | Per-IP limits per window (general / bookings+reviews+feedback / login) | 300 / 30 / 10 / 15 min |
 | `GOOGLE_REVIEWS_URL` | Link behind "See us on Google" (your Google Maps listing) | a Maps search for First Gear Cars |
 | `GOOGLE_PLACES_API_KEY`, `GOOGLE_PLACE_ID` | Optional Google reviews sync (`npm run reviews:sync`), see [GOOGLE_REVIEWS](GOOGLE_REVIEWS.md). The key is a secret | unset |

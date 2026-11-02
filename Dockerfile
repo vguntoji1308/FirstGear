@@ -11,6 +11,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
 COPY src ./src
 COPY public ./public
+COPY admin-portal ./admin-portal
 COPY docs ./docs
 COPY sdlc ./sdlc
 COPY scripts/sync-google-reviews.js ./scripts/sync-google-reviews.js

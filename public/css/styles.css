@@ -628,3 +628,15 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-even
 .rv-list .rv-card { padding: 24px 28px; }
 .rv-footer { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 36px; }
 @media (max-width: 700px) { .rv-summary { grid-template-columns: 1fr; } .rv-list .rv-card { padding: 20px; } }
+
+/* MVP: WhatsApp / checklist / join-us calls to action */
+.cta-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0; }
+.join-panel { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.join-panel h2 { margin: 6px 0; }
+.checklist-layout { display: grid; gap: 24px; padding-bottom: 64px; max-width: 820px; }
+.checklist { list-style: none; margin: 16px 0; padding: 0; display: grid; gap: 14px; }
+.checklist .check { align-items: flex-start; cursor: pointer; }
+.checklist input[type="checkbox"] { margin-top: 4px; width: 20px; height: 20px; flex: none; }
+.checklist-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+.portal-tag { margin-right: auto; margin-left: 12px; font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold); border-radius: 999px; padding: 3px 12px; }

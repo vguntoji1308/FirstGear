@@ -4,7 +4,7 @@ const { HttpError } = require('../errors');
 
 function bookingFilters(query) {
   const v = validator(query);
-  v.oneOf('period', ['all', 'current', 'past'], { optional: true });
+  v.oneOf('period', ['all', 'upcoming', 'ongoing', 'current', 'past'], { optional: true });
   v.oneOf('status', ['confirmed', 'active', 'completed', 'cancelled'], { optional: true });
   v.int('carId', { min: 1, optional: true });
   v.date('from', { optional: true }); v.date('to', { optional: true });
@@ -14,6 +14,8 @@ function bookingFilters(query) {
   }
   const conditions = [], params = [];
   const add = (sql, value) => { conditions.push(sql); params.push(value); };
+  if (filters.period === 'upcoming') add("b.status = 'confirmed' AND b.start_date > ?", todayIso());
+  if (filters.period === 'ongoing') { conditions.push("b.status IN ('confirmed','active') AND b.start_date <= ? AND b.end_date >= ?"); params.push(todayIso(), todayIso()); }
   if (filters.period === 'current') add("b.status IN ('confirmed','active') AND b.end_date >= ?", todayIso());
   if (filters.period === 'past') add("(b.status IN ('completed','cancelled') OR b.end_date < ?)", todayIso());
   if (filters.status) add('b.status = ?', filters.status);

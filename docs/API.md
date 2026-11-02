@@ -5,12 +5,15 @@ Status codes: 400 validation, 401/403 auth, 404 not found, 409 conflict (availab
 
 ## Public
 
+> **MVP:** `POST /quote`, `/bookings*`, `GET /availability/driver` and `/customer/*` return 404 unless `ENABLE_ONLINE_BOOKING=true`. Staff record bookings with `POST /admin/bookings`.
+
 | Method & path | Description |
 |---|---|
 | `GET /health` | `{status, env, time}` for probes |
 | `GET /config` | Public business info (phone, socials), rental rules, add-on catalog, categories |
 | `GET /locations` | Pick-up/drop-off locations |
-| `GET /cars` | Fleet. Query: `category, brand (maruti-suzuki, toyota, hyundai, kia, tata, mahindra), transmission, fuel (petrol, diesel, hybrid, electric, cng), seats (min), minPrice, maxPrice, q, sort (price_asc, price_desc, rating, newest), start, end (adds `available`), availableOnly=true` |
+| `GET /cars` | Fleet. Query: `category, brand (maruti-suzuki, toyota, hyundai, kia, tata, mahindra), transmission, fuel (petrol, diesel, hybrid, electric, cng), seats (min), minPrice, maxPrice, q, sort (price_asc, price_desc, rating, newest), start + end or start + days (adds `available`), availableOnly=true` |
+| `GET /availability` | Dynamic availability by duration: `start` + `days` (1..max). Returns `{start,end,days,available,cars:[{id,car,pricePerDay,available}]}`: a car is available only if free for the whole stay |
 | `GET /cars/:id` | Car + rating `{average,count}` + latest reviews |
 | `POST /cars/:id/reviews` | `{rating 1-5, author, comment?}` → new average. Rate limited |
 | `GET /availability/driver?start&end` | `{available, driversFree, dailyRate}` |
@@ -76,8 +79,11 @@ Both boundary dates are inclusive; February 29 boundaries clamp to February 28 i
 | `GET /admin/cars` | All fleet records, including inactive cars; admin DTO uses database field names such as `price_per_day` |
 | `POST /admin/cars` | Create a car; returns `{id}`. Body below |
 | `PUT /admin/cars/:id` | Replace car fields using the full create body; optional `active: false` hides it |
+| `PATCH /admin/cars/:id/price` | `{pricePerDay}` (1-10000). Quick daily-rate change; existing bookings keep their recorded price |
+| `GET /admin/inventory` | Live inventory for `date` (default today): `{date,total,available,onRent,cars:[{id,car,status:available|on-rent|hidden,booking,pricePerDay,odometerKm,ageYears,maintenanceDue,insuranceExpiry,pollutionExpiry,*Flag:ok|due-soon|overdue|unknown}]}`. Derived from bookings, so it updates as bookings are created, cancelled or completed |
 | `DELETE /admin/cars/:id` | Hide a car (soft delete; history kept) |
-| `GET /admin/bookings` | Latest 500 matching bookings. Optional `period=all|current|past`, `carId`, `status`, `from`, `to`. Dates are inclusive pickup dates (`YYYY-MM-DD`). Current: confirmed/active with return date today or later; Past: completed/cancelled or return date before today (UTC) |
+| `POST /admin/bookings` | Staff record a booking after a WhatsApp/phone enquiry: `{carId,start,end,customerName,customerPhone,notes?}`. No payment; priced at the car's current daily rate; 409 if the car is already booked. Returns `{ref,days,total}` |
+| `GET /admin/bookings` | Latest 500 matching bookings. Optional `period=all|upcoming|ongoing|current|past`, `carId`, `status`, `from`, `to`. Dates are inclusive pickup dates (`YYYY-MM-DD`). Upcoming: confirmed, starting after today; Ongoing: confirmed/active, started and not yet returned; Current (legacy): confirmed/active with return date today or later; Past: completed/cancelled or return date before today (UTC) |
 | `GET /admin/bookings/trends` | Same filters; aggregates **all** matching rows, not just the latest 500. Returns `{sample,total,booked,cancelled,months:[{month,count}],cars:[{carId,car,count}]}`. Charts exclude cancelled bookings; months use pickup dates and omit months with no records. Cars sorted by frequency. `dataset=sample` is Dev-only, synthetic current-year data generated without inserting bookings; default `dataset=live` |
 | `PATCH /admin/bookings/:id` | `{status: confirmed|active|completed|cancelled}` |
 | `GET /admin/drivers` | All chauffeurs |

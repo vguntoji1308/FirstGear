@@ -78,6 +78,11 @@ function openDb(file) {
   const cols = db.prepare('PRAGMA table_info(cars)').all().map((c) => c.name);
   if (!cols.includes('brand')) db.exec("ALTER TABLE cars ADD COLUMN brand TEXT NOT NULL DEFAULT ''");
   if (!cols.includes('image')) db.exec('ALTER TABLE cars ADD COLUMN image TEXT');
+  for (const [name, ddl] of [['odometer_km', 'INTEGER NOT NULL DEFAULT 0'], ['maintenance_due', 'TEXT'], ['insurance_expiry', 'TEXT'], ['pollution_expiry', 'TEXT']]) {
+    if (!cols.includes(name)) db.exec(`ALTER TABLE cars ADD COLUMN ${name} ${ddl}`);
+  }
+  const bookingCols = db.prepare('PRAGMA table_info(bookings)').all().map((c) => c.name);
+  if (!bookingCols.includes('source')) db.exec("ALTER TABLE bookings ADD COLUMN source TEXT NOT NULL DEFAULT 'online'");
   return db;
 }
 

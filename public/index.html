@@ -6,7 +6,7 @@
   <title>FirstGear Car Rentals | Car hire in Coimbatore with optional GearPilot driver</title>
   <meta name="description" content="Rent well-kept cars in Coimbatore with transparent pricing, add a professional GearPilot driver, and book in minutes. Open 7 days, phone support any time.">
   <meta property="og:title" content="FirstGear Car Rentals">
-  <meta property="og:description" content="Premium car hire with optional GearPilot driver. Book online in minutes.">
+  <meta property="og:description" content="Premium car hire with optional GearPilot driver. Check availability, then chat with us on WhatsApp.">
   <meta property="og:type" content="website">
   <meta name="theme-color" content="#0a0a12">
   <link rel="icon" href="/img/favicon.png" type="image/png">
@@ -29,20 +29,15 @@
         <div class="reveal">
           <span class="eyebrow">Premium car rental</span>
           <h1 id="hero-title">Drive the <span class="grad-text">extraordinary</span>. Or be driven.</h1>
-          <p class="lead">Hand-picked cars, clear pricing and an optional professional GearPilot driver. Book online in under three minutes, and call us any time.</p>
+          <p class="lead">Hand-picked cars, clear pricing and an optional professional GearPilot driver. See what is free for your dates, then chat with us on WhatsApp to reserve.</p>
+          <div class="cta-row"><a class="btn" id="hero-whatsapp" href="/fleet">Chat on WhatsApp</a><a class="btn ghost" id="hero-instagram" href="/#contact">Follow us on Instagram</a></div>
           <form class="search-card" id="search-form" aria-label="Search available cars">
             <div class="search-grid">
-              <div class="field"><label for="s-pickup">Pick-up location</label><select id="s-pickup" name="pickup" required></select></div>
-              <div class="field"><label for="s-dropoff">Drop-off location</label><select id="s-dropoff" name="dropoff" required></select></div>
               <div class="field"><label for="s-start">Pick-up date</label><input type="date" id="s-start" name="start" required></div>
-              <div class="field"><label for="s-end">Return date</label><input type="date" id="s-end" name="end" required></div>
+              <div class="field"><label for="s-days">Duration</label><select id="s-days" name="days" required><option value="1">1 day</option><option value="2">2 days</option><option value="3" selected>3 days</option><option value="4">4 days</option><option value="5">5 days</option><option value="7">7 days</option><option value="10">10 days</option><option value="14">14 days</option><option value="21">21 days</option><option value="30">30 days</option></select></div>
             </div>
             <div class="search-actions">
-              <div class="seg" role="radiogroup" aria-label="Driving option">
-                <input type="radio" name="driver" id="d-self" value="self" checked><label for="d-self">Self-drive</label>
-                <input type="radio" name="driver" id="d-chauffeur" value="chauffeur"><label for="d-chauffeur">With GearPilot</label>
-              </div>
-              <button class="btn" type="submit">Search cars</button>
+              <button class="btn" type="submit">Check availability</button>
             </div>
             <div id="search-msg" aria-live="polite"></div>
           </form>
@@ -56,7 +51,7 @@
       <div class="stat reveal"><b data-count="34">0</b><span>Cars in the fleet</span></div>
       <div class="stat reveal" data-delay="1"><b id="stat-rating">-</b><span>Average customer rating</span></div>
       <div class="stat reveal" data-delay="2"><b>24/7</b><span>Phone support</span></div>
-      <div class="stat reveal" data-delay="3"><b>3 min</b><span>Average booking time</span></div>
+      <div class="stat reveal" data-delay="3"><b>1 chat</b><span>On WhatsApp to reserve</span></div>
     </div></div>
 
     <section class="section" id="fleet" aria-labelledby="fleet-title">
@@ -110,11 +105,11 @@
     </section>
 
     <section class="section alt" aria-labelledby="how-title">
-      <div class="container"><div class="reveal"><span class="eyebrow">How it works</span><h2 id="how-title">Booked in three steps</h2></div>
+      <div class="container"><div class="reveal"><span class="eyebrow">How it works</span><h2 id="how-title">Reserve in three steps</h2></div>
         <div class="steps">
-          <div class="step reveal"><h3>Search</h3><p class="muted">Choose dates and locations. We only show cars that are actually free.</p></div>
-          <div class="step reveal" data-delay="1"><h3>Customise</h3><p class="muted">Pick self-drive or GearPilot, add insurance, a child seat or GPS.</p></div>
-          <div class="step reveal" data-delay="2"><h3>Confirm</h3><p class="muted">Enter your details, accept the terms, and get your reference instantly.</p></div>
+          <div class="step reveal"><h3>Check availability</h3><p class="muted">Choose a pick-up date and how many days. We only show cars that are free for the whole stay.</p></div>
+          <div class="step reveal" data-delay="1"><h3>Read the checklist</h3><p class="muted">A short list of what to bring and what to expect, so there are no surprises at pick-up.</p></div>
+          <div class="step reveal" data-delay="2"><h3>Chat with us</h3><p class="muted">Message us on WhatsApp and we will confirm the car, the price and the pick-up. No online payment.</p></div>
         </div></div>
     </section>
 
@@ -154,6 +149,11 @@
           <div id="fb-msg-out" aria-live="polite"></div>
         </form>
       </div>
+    </section>
+
+    <section class="section" id="join" aria-labelledby="join-title">
+      <div class="container"><div class="panel join-panel reveal"><div><span class="eyebrow">Partner with us</span><h2 id="join-title">Want to Join First Gear?</h2><p class="muted" id="join-text">Reach us on our number and we will tell you how.</p></div>
+        <div class="contact-answer-actions"><a class="btn" id="join-call" href="#"></a><a class="btn ghost" id="join-whatsapp" href="#">WhatsApp us</a></div></div></div>
     </section>
 
     <section class="section alt" id="contact" aria-labelledby="contact-title">

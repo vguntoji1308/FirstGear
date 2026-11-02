@@ -36,12 +36,15 @@ function createApp({ db, config, otpFetch, googleFetch }) {
   const loginLimiter = limiter({ windowMs: rl.windowMs, max: rl.loginMax, message: 'Too many login attempts, try again later.' });
   const chatLimiter = limiter({ windowMs: 60 * 1000, max: 40 });
 
+  const serveAdmin = config.portal !== 'customer';
+  const serveCustomer = config.portal !== 'admin';
   const bot = createBot({ db, config });
   const api = express.Router();
   api.use(require('./routes/public')({ db, config, writeLimiter }));
-  api.use(require('./routes/admin')({ db, config, loginLimiter }));
-  api.use('/customer', require('./routes/customer')({ db, config, otpFetch }));
-  api.get('/google-reviews', limiter({ windowMs: 60000, max: 10 }), async (_req, res, next) => {
+  if (serveAdmin) api.use(require('./routes/admin')({ db, config, loginLimiter }));
+  // Customer accounts/resume upload belong to the online-booking phase; off in the MVP.
+  if (serveCustomer && config.features.onlineBooking) api.use('/customer', require('./routes/customer')({ db, config, otpFetch }));
+  if (serveCustomer) api.get('/google-reviews', limiter({ windowMs: 60000, max: 10 }), async (_req, res, next) => {
     res.set('Cache-Control', 'no-store');
     const settings = config.googlePlaces;
     if (!settings?.apiKey || !settings?.placeId) return next(new HttpError(503, 'Google reviews are not configured. Set GOOGLE_PLACES_API_KEY and GOOGLE_PLACE_ID on the server.'));
@@ -59,7 +62,7 @@ function createApp({ db, config, otpFetch, googleFetch }) {
     api.use('/sdlc', require('./routes/sdlc')({ db, config, writeLimiter }));
   }
   // Express 4 does not catch rejected promises, so forward errors to the error handler explicitly.
-  api.post('/chat', chatLimiter, async (req, res, next) => {
+  if (serveCustomer) api.post('/chat', chatLimiter, async (req, res, next) => {
     try {
       const v = validator(req.body); v.string('message', { max: 500 });
       const { message } = v.done();
@@ -89,6 +92,17 @@ function createApp({ db, config, otpFetch, googleFetch }) {
     app.get('/sdlc/dashboard.js', noCache, (_req, res) => res.sendFile(path.join(config.root, 'sdlc', 'dashboard.js')));
     app.get('/sdlc/dashboard.css', noCache, (_req, res) => res.sendFile(path.join(config.root, 'sdlc', 'dashboard.css')));
   }
+
+  // Staff portal: its own pages, served outside /public so the PORTAL setting can switch it off.
+  if (serveAdmin) {
+    const adminDir = path.join(config.root, 'admin-portal');
+    const noStore = (_req, res, next) => { res.set('Cache-Control', 'no-store'); res.set('X-Robots-Tag', 'noindex, nofollow'); next(); };
+    app.get(['/admin', '/admin/'], noStore, (_req, res) => res.sendFile(path.join(adminDir, 'index.html')));
+    app.get('/admin/admin.js', noStore, (_req, res) => res.sendFile(path.join(adminDir, 'admin.js')));
+    app.get('/admin/admin.css', noStore, (_req, res) => res.sendFile(path.join(adminDir, 'admin.css')));
+  }
+  // An admin-only process serves just the shared assets, not the customer pages.
+  if (!serveCustomer) app.use((req, res, next) => (/^\/(css|js|img|vendor)\//.test(req.path) ? next() : res.status(404).sendFile(path.join(config.root, 'public', '404.html'))));
 
   // Images rarely change: let browsers/CDNs cache them for a week. Code and pages revalidate (1h in prod).
   app.use(express.static(path.join(config.root, 'public'), {

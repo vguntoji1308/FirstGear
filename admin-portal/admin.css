@@ -1,0 +1,10 @@
+/* Staff portal only */
+.price-input { width: 96px; }
+.pill.flag-ok { color: #7ce8b0; background: #163b2b; border: 1px solid #2c7150; }
+.pill.flag-due-soon { color: #ffd98a; background: #4a3a14; border: 1px solid #a4812f; }
+.pill.flag-overdue { color: #ffb5b5; background: #4b222a; border: 1px solid #99505a; }
+.pill.flag-unknown { color: #d2d5df; background: #30323d; border: 1px solid #626674; }
+[data-theme="light"] .pill.flag-ok { color: #14532d; background: #dcfce7; border-color: #86cba0; }
+[data-theme="light"] .pill.flag-due-soon { color: #713f12; background: #fef3c7; border-color: #e0b84a; }
+[data-theme="light"] .pill.flag-overdue { color: #7f1d1d; background: #fee2e2; border-color: #e19a9a; }
+[data-theme="light"] .pill.flag-unknown { color: #374151; background: #e5e7eb; border-color: #b6bcc7; }

@@ -57,6 +57,10 @@ module.exports = {
   host: env.HOST || '0.0.0.0',
   port: int(env.PORT, 3000),
   trustProxy: bool(env.TRUST_PROXY, isProd),
+  // Which portal this process serves: 'customer' (public site), 'admin' (staff portal + admin API) or 'all' (both).
+  portal: ['customer', 'admin', 'all'].includes(String(env.PORTAL || '').toLowerCase()) ? String(env.PORTAL).toLowerCase() : 'all',
+  // MVP: no online booking or payment. Customers enquire via WhatsApp/phone; staff record bookings in the admin portal.
+  features: { onlineBooking: bool(env.ENABLE_ONLINE_BOOKING, false) },
   dbPath: env.DB_PATH || path.join(root, 'data', `${appEnv}.sqlite`),
   seedDemoData: bool(env.SEED_DEMO_DATA, !isProd),
   jwtSecret,

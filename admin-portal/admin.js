@@ -1,13 +1,13 @@
 'use strict';
 (function () {
-  const { api, esc, $, $$, notice, money, fmtDate, clearFieldErrors, showFieldErrors } = window.VR;
+  const { api, esc, $, $$, notice, money, fmtDate, clearFieldErrors, showFieldErrors, todayStr, waLink } = window.VR;
   const KEY = 'vr_admin_token'; // sessionStorage: cleared when the tab closes
-  let cfg, token = sessionStorage.getItem(KEY), tab = 'bookings';
+  let cfg, token = sessionStorage.getItem(KEY), tab = 'bookings', inventoryDate = '';
   const bookingState = { period: 'all', from: '', to: '', carId: '', dataset: 'live' };
   let viewRequest = 0;
   const call = (path, opts = {}) => api(path, { ...opts, token }).catch((e) => { if (e.status === 401 && token) logout(); throw e; });
 
-  const TABS = { bookings: 'Bookings', dashboard: 'Booking dashboard', cars: 'Cars', drivers: 'GearPilot drivers', feedback: 'Feedback', reviews: 'Car ratings', import: 'Import reviews' };
+  const TABS = { bookings: 'Bookings', inventory: 'Inventory', cars: 'Cars & pricing', dashboard: 'Booking dashboard', drivers: 'GearPilot drivers', feedback: 'Feedback', reviews: 'Car ratings', import: 'Import reviews', join: 'Join First Gear' };
 
   function logout() { token = null; sessionStorage.removeItem(KEY); $('#app-view').classList.add('hidden'); $('#login-view').classList.remove('hidden'); }
   const table = (cols, rows) => `<div class="table-wrap"><table><thead><tr>${cols.map((c) => `<th scope="col">${c}</th>`).join('')}</tr></thead><tbody>${rows.join('') || `<tr><td colspan="${cols.length}" class="muted">Nothing here yet.</td></tr>`}</tbody></table></div>`;
@@ -21,14 +21,14 @@
   function bookingControls(cars, dashboard) {
     return `<form id="booking-filters" class="panel booking-filters">
       <div class="form-grid">
-        <div class="field"><label for="bk-period">Bookings</label><select id="bk-period" name="period">${[['all', 'All'], ['current', 'Current'], ['past', 'Past']].map(([value, label]) => `<option value="${value}"${bookingState.period === value ? ' selected' : ''}>${label}</option>`).join('')}</select></div>
+        <div class="field"><label for="bk-period">Bookings</label><select id="bk-period" name="period">${[['all', 'All'], ['upcoming', 'Upcoming'], ['ongoing', 'Current'], ['past', 'Past']].map(([value, label]) => `<option value="${value}"${bookingState.period === value ? ' selected' : ''}>${label}</option>`).join('')}</select></div>
         <div class="field"><label for="bk-car">Car</label><select id="bk-car" name="carId"><option value="">All cars</option>${cars.map((c) => `<option value="${c.id}"${String(c.id) === bookingState.carId ? ' selected' : ''}>${esc(c.make)} ${esc(c.model)} (#${c.id})${c.active ? '' : ' - hidden'}</option>`).join('')}</select></div>
         <div class="field"><label for="bk-from">Pickup date from (inclusive)</label><input id="bk-from" name="from" type="date" value="${esc(bookingState.from)}"></div>
         <div class="field"><label for="bk-to">Pickup date to (inclusive)</label><input id="bk-to" name="to" type="date" value="${esc(bookingState.to)}"></div>
         ${dashboard && cfg.env === 'dev' ? `<div class="field"><label for="bk-dataset">Chart data</label><select id="bk-dataset" name="dataset"><option value="live"${bookingState.dataset === 'live' ? ' selected' : ''}>Real bookings</option><option value="sample"${bookingState.dataset === 'sample' ? ' selected' : ''}>Sample data (no database changes)</option></select></div>` : ''}
       </div>
       <div class="row-actions"><button class="btn small" type="submit">Apply filters</button>${btn('Reset', 'data-booking-reset')}</div>
-      <p class="muted mt">Current: upcoming/ongoing confirmed or active rentals returning today or later. Past: completed, cancelled or return date before today (UTC). Date filters use pickup dates.</p>
+      <p class="muted mt">Upcoming: confirmed, starting after today. Current: on rent today (confirmed or active, not yet returned). Past: completed, cancelled or return date before today (UTC). Date filters use pickup dates.</p>
       <div id="booking-filter-error" role="alert"></div>
     </form>`;
   }
@@ -45,10 +45,43 @@
     return `<section class="panel booking-chart"><h2>${title}</h2>${rows.length ? `<ul class="booking-bars" aria-label="${title}">${rows.map((r) => `<li><span class="booking-bar-label">${esc(r.label)}</span><div class="booking-bar-track"><meter min="0" max="${max}" value="${r.count}" aria-label="${esc(r.label)}: ${r.count} bookings">${r.count}</meter></div><b>${r.count}</b></li>`).join('')}</ul>` : '<p class="muted">No bookings match these filters.</p>'}</section>`;
   }
 
+  // Staff record a booking after a WhatsApp/phone enquiry. No payment is taken.
+  function bookingAddForm(cars) {
+    return `<form id="booking-add" class="panel mt" novalidate><h3>Add a booking</h3><p class="muted">Use this after a customer confirms on WhatsApp or by phone. The car is blocked for those dates straight away.</p>
+      <div class="form-grid">
+        <div class="field"><label for="ba-car">Car</label><select id="ba-car" name="carId">${cars.filter((c) => c.active).map((c) => `<option value="${c.id}">${esc(c.make)} ${esc(c.model)} (${money(cfg, c.price_per_day)}/day)</option>`).join('')}</select></div>
+        <div class="field"><label for="ba-start">Pick-up date</label><input id="ba-start" name="start" type="date" min="${todayStr()}" value="${todayStr()}" required></div>
+        <div class="field"><label for="ba-end">Return date</label><input id="ba-end" name="end" type="date" min="${todayStr(1)}" value="${todayStr(1)}" required></div>
+        <div class="field"><label for="ba-name">Customer name</label><input id="ba-name" name="customerName" required maxlength="100"></div>
+        <div class="field"><label for="ba-phone">Customer phone</label><input id="ba-phone" name="customerPhone" type="tel" required></div>
+        <div class="field"><label for="ba-notes">Notes (optional)</label><input id="ba-notes" name="notes" maxlength="500"></div>
+      </div><button class="btn small" type="submit">Add booking</button><div id="ba-msg" aria-live="polite"></div></form>`;
+  }
+
+  const FLAG_LABEL = { ok: 'OK', 'due-soon': 'Due soon', overdue: 'Overdue', unknown: 'Not set' };
+  const flagCell = (date, flag) => `<span class="pill flag-${esc(flag)}">${FLAG_LABEL[flag]}</span><br><small class="muted">${date ? fmtDate(date) : ''}</small>`;
+
   const views = {
+    async inventory() {
+      const date = inventoryDate || todayStr();
+      const inv = await call(`/admin/inventory?date=${encodeURIComponent(date)}`);
+      const status = (c) => (c.status === 'on-rent' ? '<span class="pill active">On rent</span>' : c.status === 'hidden' ? '<span class="pill cancelled">Hidden</span>' : '<span class="pill confirmed">Available</span>');
+      return `<div class="panel"><div class="form-grid"><div class="field"><label for="inv-date">Inventory on</label><input id="inv-date" type="date" value="${esc(inv.date)}"></div></div>
+        <p><strong>${inv.available}</strong> of ${inv.total} cars available &middot; <strong>${inv.onRent}</strong> on rent. Updates automatically as bookings are added, cancelled or completed.</p></div>`
+        + table(['Car', 'Status', 'Booking', 'Price/day', 'Distance driven', 'Age', 'Maintenance due', 'Insurance', 'Pollution (PUC)'], inv.cars.map((c) => `<tr><td>${esc(c.car)} <small>#${c.id}</small></td><td>${status(c)}</td>
+          <td>${c.booking ? `${esc(c.booking.ref)}<br><small class="muted">${esc(c.booking.customer)}<br>${fmtDate(c.booking.start)} &rarr; ${fmtDate(c.booking.end)}</small>` : '<span class="muted">None</span>'}</td>
+          <td><div class="row-actions"><label class="sr-only" for="pr${c.id}">Price per day for ${esc(c.car)}</label><input id="pr${c.id}" type="number" min="1" max="10000" step="1" value="${c.pricePerDay}" class="price-input">${btn('Save', `data-price-save="${c.id}"`)}</div></td>
+          <td>${c.odometerKm ? `${c.odometerKm.toLocaleString()} km` : '<span class="muted">Not set</span>'}</td><td>${c.ageYears} yr</td>
+          <td>${flagCell(c.maintenanceDue, c.maintenanceFlag)}</td><td>${flagCell(c.insuranceExpiry, c.insuranceFlag)}</td><td>${flagCell(c.pollutionExpiry, c.pollutionFlag)}</td></tr>`));
+    },
+    async join() {
+      const b = cfg.business, tel = b.phone.replace(/[^+\d]/g, ''), wa = waLink(cfg, 'Hi First Gear, I would like to join First Gear.');
+      return `<div class="panel mt"><h2>Want to Join First Gear?</h2><p>Reach us on <strong>${esc(b.phone)}</strong>.</p>
+        <div class="row-actions"><a class="btn small" href="tel:${esc(tel)}">Call ${esc(b.phone)}</a>${wa ? `<a class="btn small ghost" href="${esc(wa)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}</div></div>`;
+    },
     async bookings() {
       const [rows, cars] = await Promise.all([call(`/admin/bookings?${bookingQuery(false)}`), call('/admin/cars')]);
-      return bookingControls(cars, false) + `<p>${rows.length} result${rows.length === 1 ? '' : 's'}${rows.length === 500 ? ' (latest 500; narrow filters for older records)' : ''}.</p>` + table(['Ref', 'Customer', 'Car', 'Dates', 'Driver', 'Total', 'Status', 'Actions'], rows.map((b) => `<tr><td>${esc(b.ref)}</td><td>${esc(b.customer_name)}<br><small class="muted">${esc(b.customer_email)}<br>${esc(b.customer_phone)}</small></td><td>${esc(b.car)} <small>#${b.car_id}</small></td>
+      return bookingAddForm(cars) + bookingControls(cars, false) + `<p>${rows.length} result${rows.length === 1 ? '' : 's'}${rows.length === 500 ? ' (latest 500; narrow filters for older records)' : ''}.</p>` + table(['Ref', 'Customer', 'Car', 'Dates', 'Driver', 'Total', 'Status', 'Actions'], rows.map((b) => `<tr><td>${esc(b.ref)}</td><td>${esc(b.customer_name)}<br><small class="muted">${esc(b.customer_email)}<br>${esc(b.customer_phone)}</small></td><td>${esc(b.car)} <small>#${b.car_id}</small></td>
         <td>${fmtDate(b.start_date)} &rarr; ${fmtDate(b.end_date)}</td><td>${b.driver_mode === 'chauffeur' ? esc(b.driver || 'GearPilot') : `Self<br><small class="muted">${esc(b.licence_number || '')}</small>`}</td><td>${money(cfg, b.total)}</td>
         <td><span class="pill ${esc(b.status)}">${esc(b.status)}</span></td><td><div class="row-actions"><label class="sr-only" for="st${b.id}">Status for ${esc(b.ref)}</label><select id="st${b.id}" data-status="${b.id}">${['confirmed', 'active', 'completed', 'cancelled'].map((s) => `<option${s === b.status ? ' selected' : ''}>${s}</option>`).join('')}</select></div></td></tr>`));
     },
@@ -111,7 +144,7 @@
     $('#cf-brand').innerHTML = Object.entries(cfg.brands).map(([slug, name]) => `<option value="${slug}">${esc(name)}</option>`).join('');
     $('#cf-title').textContent = car ? 'Edit car' : 'Add car';
     f.id.value = car ? car.id : '';
-    if (car) { f.image.value = car.image || ''; f.brand.value = car.brand; for (const k of ['make', 'model', 'year', 'category', 'body', 'color', 'transmission', 'fuel', 'seats', 'bags', 'description', 'deposit']) f[k].value = car[k]; f.pricePerDay.value = car.price_per_day; f.features.value = car.features.join(', '); f.active.checked = !!car.active; }
+    if (car) { f.image.value = car.image || ''; f.brand.value = car.brand; for (const k of ['make', 'model', 'year', 'category', 'body', 'color', 'transmission', 'fuel', 'seats', 'bags', 'description', 'deposit']) f[k].value = car[k]; f.pricePerDay.value = car.price_per_day; f.odometerKm.value = car.odometer_km || ''; f.maintenanceDue.value = car.maintenance_due || ''; f.insuranceExpiry.value = car.insurance_expiry || ''; f.pollutionExpiry.value = car.pollution_expiry || ''; f.features.value = car.features.join(', '); f.active.checked = !!car.active; }
     $('#car-form-dialog').showModal();
   }
 
@@ -130,11 +163,15 @@
     $('#cf-close').addEventListener('click', () => $('#car-form-dialog').close());
 
     $('#tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) show(b.dataset.tab); });
-    $('#panel').addEventListener('change', (e) => { const s = e.target.closest('[data-status]'); if (s) mutate(() => call(`/admin/bookings/${s.dataset.status}`, { method: 'PATCH', body: { status: s.value } })); });
+    $('#panel').addEventListener('change', (e) => { if (e.target.id === 'inv-date') { inventoryDate = e.target.value; return show(tab); } const s = e.target.closest('[data-status]'); if (s) mutate(() => call(`/admin/bookings/${s.dataset.status}`, { method: 'PATCH', body: { status: s.value } })); });
     $('#panel').addEventListener('click', (e) => {
       const t = e.target.closest('button'); if (!t) return;
       const d = t.dataset;
       if ('bookingReset' in d) { Object.assign(bookingState, { period: 'all', from: '', to: '', carId: '', dataset: 'live' }); show(tab); }
+      else if (d.priceSave) {
+        const input = $(`#pr${d.priceSave}`);
+        mutate(() => call(`/admin/cars/${d.priceSave}/price`, { method: 'PATCH', body: { pricePerDay: input.value } }));
+      }
       else if ('carNew' in d) carDialog(null);
       else if (d.carEdit) carDialog(window.__cars.find((c) => c.id === +d.carEdit));
       else if (d.carDel) { if (confirm('Hide this car from customers? Booking history is kept.')) mutate(() => call(`/admin/cars/${d.carDel}`, { method: 'DELETE' })); }
@@ -157,6 +194,16 @@
         await show(tab);
         return;
       }
+      if (e.target.id === 'booking-add') {
+        e.preventDefault();
+        const f = e.target; clearFieldErrors(f);
+        try {
+          const r = await call('/admin/bookings', { method: 'POST', body: { carId: f.carId.value, start: f.start.value, end: f.end.value, customerName: f.customerName.value, customerPhone: f.customerPhone.value, notes: f.notes.value } });
+          await show('bookings');
+          notice($('#ba-msg'), 'ok', `Booking ${r.ref} added for ${r.days} day(s), total ${money(cfg, r.total)}.`);
+        } catch (err) { notice($('#ba-msg'), 'error', err.details ? Object.values(err.details)[0] : err.message); showFieldErrors(f, err.details); }
+        return;
+      }
       if (e.target.id === 'rv-import') {
         e.preventDefault();
         let list;
@@ -177,7 +224,8 @@
       e.preventDefault();
       const f = e.target; clearFieldErrors(f);
       const body = { brand: f.brand.value, image: f.image.value, make: f.make.value, model: f.model.value, year: f.year.value, category: f.category.value, body: f.body.value, color: f.color.value, transmission: f.transmission.value, fuel: f.fuel.value,
-        seats: f.seats.value, bags: f.bags.value, pricePerDay: f.pricePerDay.value, deposit: f.deposit.value, description: f.description.value, features: f.features.value.split(','), active: f.active.checked };
+        seats: f.seats.value, bags: f.bags.value, pricePerDay: f.pricePerDay.value, deposit: f.deposit.value, description: f.description.value, features: f.features.value.split(','), active: f.active.checked,
+        odometerKm: f.odometerKm.value, maintenanceDue: f.maintenanceDue.value, insuranceExpiry: f.insuranceExpiry.value, pollutionExpiry: f.pollutionExpiry.value };
       try {
         await call(f.id.value ? `/admin/cars/${f.id.value}` : '/admin/cars', { method: f.id.value ? 'PUT' : 'POST', body });
         $('#car-form-dialog').close(); show('cars');

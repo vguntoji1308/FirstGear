@@ -4,6 +4,7 @@ process.env.DB_PATH = ':memory:';
 process.env.ADMIN_EMAIL = 'admin@test.local';
 process.env.ADMIN_PASSWORD = 'Test-Admin-Pass-123';
 process.env.JWT_SECRET = 'x'.repeat(40) + 'unit-test-secret';
+process.env.ENABLE_ONLINE_BOOKING = 'true'; // existing suites cover the online-booking phase; MVP defaults are tested in mvp.test.js
 process.env.RATE_LIMIT_WRITE_MAX = '1000';
 process.env.RATE_LIMIT_LOGIN_MAX = '1000';
 

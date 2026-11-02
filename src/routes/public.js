@@ -9,6 +9,7 @@ const { ADDONS, computeQuote } = require('../services/pricing');
 const avail = require('../services/availability');
 const crypto = require('node:crypto');
 
+const addDaysIso = (iso, n) => new Date(Date.parse(`${iso}T00:00:00Z`) + (Number(n) || 0) * 86400000).toISOString().slice(0, 10);
 const CATEGORIES = ['economy', 'compact', 'family', 'suv', 'luxury', 'sports', 'electric', 'van'];
 
 const carDto = (c, stats) => ({
@@ -36,6 +37,12 @@ module.exports = function publicRoutes({ db, config, writeLimiter }) {
     return { start, end, days };
   }
 
+  // MVP: online booking/quotes are off unless ENABLE_ONLINE_BOOKING=true; customers enquire via WhatsApp or phone instead.
+  r.use(['/quote', '/bookings', '/availability/driver'], (_req, _res, next) => {
+    if (!config.features.onlineBooking) return next(new HttpError(404, 'Online booking is not available. Please contact us on WhatsApp or by phone.'));
+    next();
+  });
+
   r.get('/health', (_req, res) => res.json({ status: 'ok', env: config.appEnv, time: new Date().toISOString() }));
 
   r.get('/config', (_req, res) => res.json({
@@ -46,7 +53,7 @@ module.exports = function publicRoutes({ db, config, writeLimiter }) {
       weeklyDiscount: rental.weeklyDiscount, chauffeurDailyRate: rental.chauffeurDailyRate, freeCancellationHours: rental.freeCancellationHours,
       earliestDateOfBirth: shiftYears(todayIso(), -80), latestLicenceExpiry: shiftYears(todayIso(), 20),
     },
-    addons: Object.values(ADDONS), categories: CATEGORIES, brands: BRANDS, env: config.appEnv,
+    features: config.features, addons: Object.values(ADDONS), categories: CATEGORIES, brands: BRANDS, env: config.appEnv,
   }));
 
   r.get('/locations', (_req, res) => res.json(db.prepare('SELECT id, name, address FROM locations WHERE active = 1 ORDER BY id').all()));
@@ -67,8 +74,8 @@ module.exports = function publicRoutes({ db, config, writeLimiter }) {
     const cars = db.prepare(`SELECT * FROM cars WHERE ${where.join(' AND ')} ORDER BY ${order}`).all(...params);
 
     let blocked = null;
-    if (q.start && q.end) {
-      const v = validator({ start: q.start, end: q.end });
+    if (q.start && (q.end || q.days)) {
+      const v = validator({ start: q.start, end: q.end || addDaysIso(q.start, q.days) });
       const { start, end } = range(v);
       blocked = avail.unavailableCarIds(db, start, end);
     }
@@ -77,6 +84,18 @@ module.exports = function publicRoutes({ db, config, writeLimiter }) {
     if (q.sort === 'rating') out = out.sort((a, b) => (b.rating.average || 0) - (a.rating.average || 0));
     if (q.availableOnly === 'true' && blocked) out = out.filter((c) => c.available);
     res.json(out);
+  });
+
+  // Dynamic availability for a pick-up date and a duration in days: which cars are free for the whole stay.
+  r.get('/availability', (req, res) => {
+    const v = validator(req.query); v.date('start'); v.int('days', { min: 1, max: rental.maxRentalDays });
+    const { start, days } = v.done();
+    if (start < todayIso()) throw new HttpError(400, 'Validation failed', { start: 'Pick-up date cannot be in the past' });
+    const end = addDaysIso(start, days);
+    const blocked = avail.unavailableCarIds(db, start, end);
+    const cars = db.prepare('SELECT id, make, model, price_per_day FROM cars WHERE active = 1 ORDER BY id').all()
+      .map((c) => ({ id: c.id, car: `${c.make} ${c.model}`, pricePerDay: c.price_per_day, available: !blocked.has(c.id) }));
+    res.json({ start, end, days, available: cars.filter((c) => c.available).length, cars });
   });
 
   r.get('/cars/:id', (req, res) => {

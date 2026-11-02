@@ -1,13 +1,13 @@
 'use strict';
 (function () {
-  const { api, tint, icon, esc, $, stars, carSvg, carArt, hasPhoto, brandBadge, revealOnScroll, notice, todayStr, money, socialLinks, showFieldErrors, clearFieldErrors } = window.VR;
+  const { waLink, api, tint, icon, esc, $, stars, carSvg, carArt, hasPhoto, brandBadge, revealOnScroll, notice, todayStr, money, socialLinks, showFieldErrors, clearFieldErrors } = window.VR;
 
   const TERMS = [
     ['Driver requirements', '<p>Self-drive renters must be at least {minAge} years old and hold a full, valid driving licence for the whole rental. Drivers under {young} pay a young-driver fee of {youngFee} per day. GearPilot bookings need no licence from you (minimum age {chAge}).</p>'],
     ['Deposit and payment', '<p>A refundable security deposit is held at pick-up for self-drive rentals (shown for each car). GearPilot bookings need no deposit. You can pay at the desk by major credit or debit card.</p>'],
-    ['Cancellation and changes', '<p>Cancel for free up to {cancel} hours before pick-up from the "My booking" page. Later cancellations and changes are at our discretion, so please call us.</p>'],
+    ['Cancellation and changes', '<p>To cancel or change a reservation, message or call us. Free cancellation applies up to {cancel} hours before pick-up; later changes are at our discretion.</p>'],
     ['Fuel, mileage and returns', '<ul><li>Full-to-full fuel policy. Electric cars are returned with at least 20% charge.</li><li>250 km per day included; extra distance is charged per km.</li><li>Late returns are charged per hour, then as a full extra day.</li></ul>'],
-    ['Insurance and damage', '<p>Basic collision cover is included with an excess. Add full protection at checkout for zero excess. Tyres, glass and underbody are covered only with full protection. Report any incident to us immediately.</p>'],
+    ['Insurance and damage', '<p>Basic collision cover is included with an excess. Ask us about full protection for zero excess. Tyres, glass and underbody are covered only with full protection. Report any incident to us immediately.</p>'],
     ['Use of the vehicle', '<p>No smoking. Pets only by prior arrangement. Cross-border travel needs written permission. The car may not be used for racing, towing (unless equipped) or by unlisted drivers.</p>'],
     ['GearPilot service', '<p>GearPilot drivers drive up to 10 hours per day. Extra hours and waiting time are charged at an hourly rate. Tolls, parking and the GearPilot driver\'s accommodation on multi-city trips are not included.</p>'],
   ];
@@ -68,23 +68,29 @@
     $('#hero-art').innerHTML = '<div class="hero-car"><div class="car-stage hero-stage" data-car="#7c5cff"><img class="car-photo" src="/img/cars/thumb/hero-48.webp" alt="Mahindra Thar" decoding="async" fetchpriority="high"></div></div>';
     tint($('#hero-art'));
     $('#chip-phone').innerHTML = `${icon('phone')} ${esc(b.phone)}`;
-    $('#chip-free').innerHTML = `${icon('check')} Free cancellation up to ${r.freeCancellationHours}h`;
+    $('#chip-free').innerHTML = `${icon('check')} No online payment`;
     ['shield:i2', 'bolt:i1', 'pin:i3', 'user:i4'].forEach((p) => { const [n, id] = p.split(':'); $(`#${id}`).innerHTML = icon(n); });
     $('#chauffeur-ticks').innerHTML = [`Professional chauffeur from ${money(cfg, r.chauffeurDailyRate)} per day`, 'Vetted, experienced and multilingual drivers', 'No licence or deposit needed from you', 'Add any car, from city hatch to executive saloon'].map((t) => `<li>${icon('check')}<span>${esc(t)}</span></li>`).join('');
 
-    // Search form
-    const locs = await api('/locations');
-    const opts = locs.map((l) => `<option value="${l.id}">${esc(l.name)}</option>`).join('');
-    $('#s-pickup').innerHTML = opts; $('#s-dropoff').innerHTML = opts;
-    const start = $('#s-start'), end = $('#s-end');
-    start.min = todayStr(); start.value = todayStr(3); end.min = todayStr(1); end.value = todayStr(6);
-    start.addEventListener('change', () => { const min = new Date(Date.parse(start.value) + 86400000).toISOString().slice(0, 10); end.min = min; if (end.value <= start.value) end.value = min; });
+    // Availability search: pick-up date + duration (the fleet page checks every car for the whole stay)
+    const start = $('#s-start');
+    start.min = todayStr(); start.value = todayStr(3);
     $('#search-form').addEventListener('submit', (e) => {
       e.preventDefault();
-      if (end.value <= start.value) return notice($('#search-msg'), 'error', 'Return date must be after pick-up date.');
-      const p = new URLSearchParams({ start: start.value, end: end.value, pickup: $('#s-pickup').value, dropoff: $('#s-dropoff').value, driver: e.target.driver.value });
-      location.href = `/fleet?${p}`;
+      if (!start.value || start.value < todayStr()) return notice($('#search-msg'), 'error', 'Choose a pick-up date from today onwards.');
+      location.href = `/fleet?${new URLSearchParams({ start: start.value, days: $('#s-days').value })}`;
     });
+
+    // WhatsApp / Instagram / join-us calls to action
+    const wa = waLink(cfg, 'Hi First Gear, I would like to enquire about a car.'), insta = b.social.instagram;
+    if (wa) { $('#hero-whatsapp').href = wa; $('#hero-whatsapp').target = '_blank'; $('#hero-whatsapp').rel = 'noopener noreferrer'; }
+    else $('#hero-whatsapp').remove();
+    if (insta) { $('#hero-instagram').href = insta; $('#hero-instagram').target = '_blank'; $('#hero-instagram').rel = 'noopener noreferrer'; }
+    else $('#hero-instagram').remove();
+    $('#join-text').textContent = `Reach us on ${b.phone} and we will tell you how.`;
+    $('#join-call').href = `tel:${tel}`; $('#join-call').innerHTML = `${icon('phone')} ${esc(b.phone)}`;
+    const joinWa = waLink(cfg, 'Hi First Gear, I would like to join First Gear.');
+    if (joinWa) { $('#join-whatsapp').href = joinWa; $('#join-whatsapp').target = '_blank'; $('#join-whatsapp').rel = 'noopener noreferrer'; } else $('#join-whatsapp').remove();
 
     // Featured fleet
     const cars = await api('/cars?sort=rating');
@@ -96,7 +102,7 @@
       <div class="car-body"><div class="car-title"><h3>${esc(c.make)} ${esc(c.model)}</h3><div class="price">${money(cfg, c.pricePerDay)}<small>/day</small></div></div>
       <div>${stars(c.rating.average, c.rating.count)}</div>
       <ul class="specs"><li>${icon('seat')} ${c.seats} seats</li><li>${icon('gear')} ${esc(c.transmission)}</li><li>${icon('fuel')} ${esc(c.fuel)}</li></ul>
-      <div class="car-actions"><a class="btn small" href="/book?carId=${c.id}&amp;start=${todayStr(3)}&amp;end=${todayStr(6)}">Book</a><a class="btn small ghost" href="/fleet">Details</a></div></div></article>`).join('');
+      <div class="car-actions"><a class="btn small" href="/checklist?carId=${c.id}">Enquire</a><a class="btn small ghost" href="/fleet">Details</a></div></div></article>`).join('');
     tint();
     $('#brands-strip').innerHTML = Object.entries(cfg.brands).map(([slug, name]) => `<a href="/fleet?brand=${slug}" aria-label="${esc(name)} cars"><img class="brand-mark" src="/img/brands/${slug}-mark.svg" alt="" loading="lazy"><span>${esc(name)}</span></a>`).join('');
     revealOnScroll();

@@ -7,11 +7,12 @@
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/img/favicon.png" type="image/png">
   <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/admin/admin.css">
   <script src="/js/theme.js"></script>
   <script src="/js/common.js" defer></script>
-  <script src="/js/admin.js" defer></script>
+  <script src="/admin/admin.js" defer></script>
 </head>
-<body class="page-solid">
+<body class="page-solid" data-portal="admin">
   <a class="skip-link" href="#main">Skip to content</a>
   <header id="site-header"></header>
   <main id="main" class="container">
@@ -24,7 +25,7 @@
       </form>
     </section>
     <section id="app-view" class="hidden">
-      <div class="page-head admin-head"><div class="section-head"><h1>Admin</h1><button class="btn ghost small" id="logout" type="button">Sign out</button></div></div>
+      <div class="page-head admin-head"><div class="section-head"><h1>Bookings &amp; fleet</h1><button class="btn ghost small" id="logout" type="button">Sign out</button></div></div>
       <div class="kpis" id="kpis"></div>
       <div class="tabs" role="tablist" aria-label="Admin sections" id="tabs"></div>
       <div id="panel" aria-live="polite"></div>
@@ -34,7 +35,7 @@
     <form class="dialog-body" id="car-form" novalidate><h2 id="cf-title">Car</h2><input type="hidden" name="id">
       <div class="form-grid">
         <div class="field"><label for="cf-brand">Brand (logo)</label><select id="cf-brand" name="brand"></select></div><div class="field"><label for="cf-make">Make (display name)</label><input id="cf-make" name="make" required></div><div class="field"><label for="cf-model">Model</label><input id="cf-model" name="model" required></div>
-        <div class="field"><label for="cf-year">Year</label><input id="cf-year" name="year" type="number" required></div>
+        <div class="field"><label for="cf-year">Year (age of the car)</label><input id="cf-year" name="year" type="number" required></div>
         <div class="field"><label for="cf-cat">Category</label><select id="cf-cat" name="category"></select></div>
         <div class="field"><label for="cf-body">Body style</label><select id="cf-body" name="body"><option>hatch</option><option>sedan</option><option>suv</option><option>sports</option><option>van</option></select></div>
         <div class="field"><label for="cf-color">Colour</label><input id="cf-color" name="color" type="color" value="#7c5cff"></div>
@@ -47,6 +48,10 @@
         <div class="field full"><label for="cf-image">Photo path (optional, file in public/img/cars/)</label><input id="cf-image" name="image" placeholder="/img/cars/my-car.jpg"></div>
         <div class="field full"><label for="cf-desc">Description</label><input id="cf-desc" name="description" maxlength="500"></div>
         <div class="field full"><label for="cf-feat">Features (comma separated)</label><input id="cf-feat" name="features"></div>
+        <div class="field"><label for="cf-odo">Distance driven (km)</label><input id="cf-odo" name="odometerKm" type="number" min="0" step="1"></div>
+        <div class="field"><label for="cf-maint">Maintenance due</label><input id="cf-maint" name="maintenanceDue" type="date"></div>
+        <div class="field"><label for="cf-ins">Insurance expires</label><input id="cf-ins" name="insuranceExpiry" type="date"></div>
+        <div class="field"><label for="cf-puc">Pollution (PUC) expires</label><input id="cf-puc" name="pollutionExpiry" type="date"></div>
         <label class="check field full"><input type="checkbox" name="active" checked> Visible to customers</label>
       </div>
       <div class="alert error hidden" id="cf-err" role="alert"></div><button class="btn" type="submit">Save car</button></form></dialog>
